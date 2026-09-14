@@ -1,0 +1,10 @@
+Lakeside Catering Co.
+Invoice Number: LC-2026-118
+Issue Date: 2026-03-27
+Currency: GBP
+
+Buffet lunch, 40 covers     1     560.00      560.00
+
+Subtotal                                      560.00
+VAT                                           112.00
+Total                                         672.00

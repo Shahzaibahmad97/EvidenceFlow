@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "BP/2026/0447",
+    "quote": "Invoice reference: BP/2026/0447"
+  },
+  "supplier": {
+    "value": "Bluepeak Consulting",
+    "quote": "BLUEPEAK CONSULTING"
+  },
+  "currency": {
+    "value": "USD",
+    "quote": "Billing currency: USD"
+  },
+  "issue_date": {
+    "value": "2026-01-29",
+    "quote": "Issued on 2026-01-29"
+  },
+  "line_items": [
+    {
+      "description": "Discovery workshop",
+      "quantity": "2",
+      "unit_price": "950.00",
+      "amount": "1900.00"
+    },
+    {
+      "description": "Integration review",
+      "quantity": "1",
+      "unit_price": "950.00",
+      "amount": "950.00"
+    }
+  ],
+  "subtotal": {
+    "value": "2850.00",
+    "quote": "Subtotal .......................... 2850.00"
+  },
+  "tax": {
+    "value": "0.00",
+    "quote": "Sales tax ......................... 0.00"
+  },
+  "total": {
+    "value": "2850.00",
+    "quote": "Total due ......................... 2850.00"
+  }
+}

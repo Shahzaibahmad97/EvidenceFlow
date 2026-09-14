@@ -1,0 +1,50 @@
+{
+  "invoice_number": {
+    "value": "CS-0092",
+    "quote": "Invoice CS-0092"
+  },
+  "supplier": {
+    "value": "Calder & Sons Joinery",
+    "quote": "Calder & Sons Joinery"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Priced in GBP"
+  },
+  "issue_date": {
+    "value": "2026-05-02",
+    "quote": "Dated 2026-05-02"
+  },
+  "line_items": [
+    {
+      "description": "Oak worktop, 3m",
+      "quantity": "2",
+      "unit_price": "410.00",
+      "amount": "820.00"
+    },
+    {
+      "description": "Fitting labour",
+      "quantity": "6",
+      "unit_price": "55.00",
+      "amount": "330.00"
+    },
+    {
+      "description": "Delivery",
+      "quantity": "1",
+      "unit_price": "40.00",
+      "amount": "40.00"
+    }
+  ],
+  "subtotal": {
+    "value": "1190.00",
+    "quote": "Subtotal                                              1190.00"
+  },
+  "tax": {
+    "value": "238.00",
+    "quote": "VAT                                                    238.00"
+  },
+  "total": {
+    "value": "1428.00",
+    "quote": "TOTAL                                                 1428.00"
+  }
+}
