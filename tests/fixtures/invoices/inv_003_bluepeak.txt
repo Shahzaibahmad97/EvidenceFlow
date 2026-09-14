@@ -1,0 +1,14 @@
+BLUEPEAK CONSULTING
+------------------------------------------
+Invoice reference: BP/2026/0447
+Issued on 2026-01-29
+Billing currency: USD
+
+Professional services rendered:
+
+  Discovery workshop           2 days    950.00     1900.00
+  Integration review           1 days    950.00      950.00
+
+  Subtotal .......................... 2850.00
+  Sales tax ......................... 0.00
+  Total due ......................... 2850.00

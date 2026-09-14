@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "WH-2026-441",
+    "quote": "Invoice Number: WH-2026-441"
+  },
+  "supplier": {
+    "value": "Wren & Hobb Stationers",
+    "quote": "Wren & Hobb Stationers"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-04-18",
+    "quote": "Issue Date: 2026-04-18"
+  },
+  "line_items": [
+    {
+      "description": "Ring binder, A4, box of 10",
+      "quantity": "6",
+      "unit_price": "18.50",
+      "amount": "111.00"
+    },
+    {
+      "description": "Archive box, flat-packed",
+      "quantity": "4",
+      "unit_price": "12.25",
+      "amount": "49.00"
+    }
+  ],
+  "subtotal": {
+    "value": "160.00",
+    "quote": "Subtotal    160.00"
+  },
+  "tax": {
+    "value": "32.00",
+    "quote": "VAT 20%     32.00"
+  },
+  "total": {
+    "value": "192.00",
+    "quote": "Total    192.00"
+  }
+}

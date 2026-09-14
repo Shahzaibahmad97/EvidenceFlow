@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "KD-2026-014",
+    "quote": "Invoice Number: KD-2026-014"
+  },
+  "supplier": {
+    "value": "Kingsmoor Data Systems",
+    "quote": "Kingsmoor Data Systems"
+  },
+  "currency": {
+    "value": "USD",
+    "quote": "Currency: USD"
+  },
+  "issue_date": {
+    "value": "2026-02-11",
+    "quote": "Issue Date: 2026-02-11"
+  },
+  "line_items": [
+    {
+      "description": "Server chassis, 2U",
+      "quantity": "3",
+      "unit_price": "4180.00",
+      "amount": "12540.00"
+    },
+    {
+      "description": "Rail kit",
+      "quantity": "3",
+      "unit_price": "115.00",
+      "amount": "345.00"
+    }
+  ],
+  "subtotal": {
+    "value": "12885.00",
+    "quote": "Subtotal                                        12,885.00"
+  },
+  "tax": {
+    "value": "1063.01",
+    "quote": "Sales tax 8.25%                                  1,063.01"
+  },
+  "total": {
+    "value": "13948.01",
+    "quote": "Total                                           13,948.01"
+  }
+}

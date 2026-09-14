@@ -1,0 +1,11 @@
+Ravenscroft Textiles
+CREDIT NOTE
+Invoice Number: CN-2026-0051
+Issue Date: 2026-04-02
+Currency: EUR
+
+Returned bolts, cotton         5      60.00      300.00
+
+Subtotal                                       -300.00
+VAT 19%                                         -57.00
+Total                                          -357.00

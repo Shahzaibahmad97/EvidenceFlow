@@ -1,0 +1,13 @@
+Calder & Sons Joinery
+Invoice CS-0092
+Dated 2026-05-02
+Priced in GBP
+
+Item                                  Qty   Rate     Line total
+Oak worktop, 3m                         2   410.00      820.00
+Fitting labour                          6    55.00      330.00
+Delivery                                1    40.00       40.00
+
+Subtotal                                              1190.00
+VAT                                                    238.00
+TOTAL                                                 1428.00

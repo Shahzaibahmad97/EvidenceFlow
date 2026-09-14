@@ -1,0 +1,16 @@
+ACME SUPPLIES LTD
+14 Harbour Road, Bristol BS1 4XY
+
+INVOICE (copy)
+
+Invoice Number: INV-2026-0001
+Issue Date: 2026-03-04
+Currency: GBP
+
+Description                 Qty    Unit Price      Amount
+A4 copier paper, box         10         24.50      245.00
+Toner cartridge XR-40         2         89.00      178.00
+
+Subtotal                                           423.00
+VAT 20%                                             84.60
+Total                                              507.60

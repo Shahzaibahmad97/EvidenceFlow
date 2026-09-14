@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "FE-2026-77",
+    "quote": "Invoice Number: FE-2026-77"
+  },
+  "supplier": {
+    "value": "Fenwick Electrical Services",
+    "quote": "Fenwick Electrical Services"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-01-14",
+    "quote": "Issue Date: 2026-01-14"
+  },
+  "line_items": [
+    {
+      "description": "Consumer unit",
+      "quantity": "1",
+      "unit_price": "340.00",
+      "amount": "408.00"
+    },
+    {
+      "description": "Emergency callout",
+      "quantity": "2",
+      "unit_price": "95.00",
+      "amount": "228.00"
+    }
+  ],
+  "subtotal": {
+    "value": "530.00",
+    "quote": "Net total                                     530.00"
+  },
+  "tax": {
+    "value": "106.00",
+    "quote": "VAT total                                     106.00"
+  },
+  "total": {
+    "value": "636.00",
+    "quote": "Amount payable                                636.00"
+  }
+}

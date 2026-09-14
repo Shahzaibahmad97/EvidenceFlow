@@ -1,0 +1,11 @@
+Lyndhurst Garden Centre
+Invoice Number: LG-2026-66
+Issue Date: 2026-04-27
+Currency: GBP
+
+Topsoil, bulk bag                6     €38.00     €228.00
+Bark mulch, bulk bag             3     €41.00     €123.00
+
+Subtotal                                         €351.00
+VAT 20%                                           €70.20
+Total                                            €421.20

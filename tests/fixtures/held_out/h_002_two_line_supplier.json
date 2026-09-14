@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "AV-3307",
+    "quote": "Invoice Number: AV-3307"
+  },
+  "supplier": {
+    "value": "Ashcombe Valley Farm Produce Limited",
+    "quote": "Ashcombe Valley\nFarm Produce Limited"
+  },
+  "currency": {
+    "value": "EUR",
+    "quote": "Currency: EUR"
+  },
+  "issue_date": {
+    "value": "2026-04-21",
+    "quote": "Issue Date: 2026-04-21"
+  },
+  "line_items": [
+    {
+      "description": "Seasonal vegetable crate",
+      "quantity": "12",
+      "unit_price": "21.00",
+      "amount": "252.00"
+    },
+    {
+      "description": "Delivery, refrigerated",
+      "quantity": "1",
+      "unit_price": "35.00",
+      "amount": "35.00"
+    }
+  ],
+  "subtotal": {
+    "value": "287.00",
+    "quote": "Subtotal                                          287.00"
+  },
+  "tax": {
+    "value": "54.53",
+    "quote": "VAT 19%                                            54.53"
+  },
+  "total": {
+    "value": "341.53",
+    "quote": "Total                                             341.53"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "INV-2026-0001",
+    "quote": "Invoice Number: INV-2026-0001"
+  },
+  "supplier": {
+    "value": "ACME Supplies Ltd",
+    "quote": "ACME SUPPLIES LTD"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-03-04",
+    "quote": "Issue Date: 2026-03-04"
+  },
+  "line_items": [
+    {
+      "description": "A4 copier paper, box",
+      "quantity": "10",
+      "unit_price": "24.50",
+      "amount": "245.00"
+    },
+    {
+      "description": "Toner cartridge XR-40",
+      "quantity": "2",
+      "unit_price": "89.00",
+      "amount": "178.00"
+    }
+  ],
+  "subtotal": {
+    "value": "423.00",
+    "quote": "Subtotal                                           423.00"
+  },
+  "tax": {
+    "value": "84.60",
+    "quote": "VAT 20%                                             84.60"
+  },
+  "total": {
+    "value": "507.60",
+    "quote": "Total                                              507.60"
+  }
+}

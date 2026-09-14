@@ -1,0 +1,10 @@
+Loxley Paper Mill
+Invoice Number: LP-5521
+Issue Date: 2026-02-23
+Currency: EUR
+
+Recycled stock, 80gsm ream   37      11.15      412.55
+
+Subtotal                                        412.55
+VAT 19%                                          78.38
+Total                                           490.94

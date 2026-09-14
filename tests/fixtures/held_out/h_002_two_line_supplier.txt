@@ -1,0 +1,12 @@
+Ashcombe Valley
+Farm Produce Limited
+Invoice Number: AV-3307
+Issue Date: 2026-04-21
+Currency: EUR
+
+Seasonal vegetable crate       12      21.00      252.00
+Delivery, refrigerated          1      35.00       35.00
+
+Subtotal                                          287.00
+VAT 19%                                            54.53
+Total                                             341.53

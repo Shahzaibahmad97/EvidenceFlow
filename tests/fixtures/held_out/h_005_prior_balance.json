@@ -1,0 +1,50 @@
+{
+  "invoice_number": {
+    "value": "TP-7714",
+    "quote": "Invoice Number: TP-7714"
+  },
+  "supplier": {
+    "value": "Tamar Plant Hire",
+    "quote": "Tamar Plant Hire"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-03-24",
+    "quote": "Issue Date: 2026-03-24"
+  },
+  "line_items": [
+    {
+      "description": "Mini excavator, weekly rate",
+      "quantity": "2",
+      "unit_price": "430.00",
+      "amount": "860.00"
+    },
+    {
+      "description": "Operator, daily",
+      "quantity": "5",
+      "unit_price": "180.00",
+      "amount": "900.00"
+    },
+    {
+      "description": "Balance brought forward from INV TP-7602",
+      "quantity": "1",
+      "unit_price": "640.00",
+      "amount": "640.00"
+    }
+  ],
+  "subtotal": {
+    "value": "1760.00",
+    "quote": "Subtotal                                         1760.00"
+  },
+  "tax": {
+    "value": "352.00",
+    "quote": "VAT 20%                                           352.00"
+  },
+  "total": {
+    "value": "2112.00",
+    "quote": "Total                                            2112.00"
+  }
+}

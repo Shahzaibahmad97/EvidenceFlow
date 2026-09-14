@@ -1,0 +1,11 @@
+Glenmore Safety Equipment
+Invoice Number: GS-2026-129
+Issue Date: 2026-03-09
+Currency: GBP
+
+Hard hat, vented               20      14.40      288.00
+Hi-vis vest, class 2           30       7.20      216.00
+
+Subtotal                                          504.00
+VAT 20%                                           100.80
+Total                                             604.80

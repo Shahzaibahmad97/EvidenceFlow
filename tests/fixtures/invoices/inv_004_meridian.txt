@@ -1,0 +1,15 @@
+Meridian Logistics GmbH
+Tax invoice
+
+INVOICE #: ML-2026-3310
+ISSUE DATE: 2026-04-11
+CCY: EUR
+
+Line items
+1. Freight forwarding, Rotterdam to Hamburg | 1 | 1250.00 | 1250.00
+2. Customs handling fee                     | 3 |   45.00 |  135.00
+3. Fuel surcharge                           | 1 |   98.40 |   98.40
+
+Subtotal: 1483.40
+VAT at 19%: 281.85
+Grand total: 1765.25

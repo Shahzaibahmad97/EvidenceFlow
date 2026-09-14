@@ -1,0 +1,10 @@
+Zurich Precision Instruments
+Invoice Number: ZP-2026-018
+Issue Date: 2026-03-16
+Currency: CHF
+
+Calibration service           1     640.00      640.00
+
+Subtotal                                        640.00
+VAT 8.1%                                         51.84
+Total                                           691.84

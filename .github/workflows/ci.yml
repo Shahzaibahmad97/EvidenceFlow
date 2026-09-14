@@ -1,0 +1,27 @@
+name: tests
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest
+      - run: python scripts/demo.py
+      - run: python scripts/demo_approval.py
+      - run: python scripts/demo_recovery.py
+      - run: python evals/run.py --check
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t evidenceflow .

@@ -1,0 +1,11 @@
+Bramley Produce Ltd
+CREDIT NOTE
+Invoice Number: CN-2026-0042
+Issue Date: 2026-03-30
+Currency: GBP
+
+Returned stock, crates        -8      22.50     -180.00
+
+Subtotal                                       -180.00
+VAT 20%                                         -36.00
+Total                                          -216.00

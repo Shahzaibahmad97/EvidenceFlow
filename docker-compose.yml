@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: evidenceflow
+      POSTGRES_PASSWORD: evidenceflow
+      POSTGRES_DB: evidenceflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evidenceflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      EVIDENCEFLOW_DATABASE_URL: postgresql+psycopg://evidenceflow:evidenceflow@db:5432/evidenceflow
+      EVIDENCEFLOW_PROVIDER: fake
+      EVIDENCEFLOW_FIXTURE_DIR: /app/tests/fixtures
+      EVIDENCEFLOW_RUN_WORKER: "false"
+      EVIDENCEFLOW_SEED_ON_START: "true"
+    ports:
+      - "8000:8000"
+
+  worker:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      EVIDENCEFLOW_DATABASE_URL: postgresql+psycopg://evidenceflow:evidenceflow@db:5432/evidenceflow
+      EVIDENCEFLOW_PROVIDER: fake
+      EVIDENCEFLOW_FIXTURE_DIR: /app/tests/fixtures
+    command: ["python", "-m", "app.worker_process"]
+
+volumes:
+  db-data:
