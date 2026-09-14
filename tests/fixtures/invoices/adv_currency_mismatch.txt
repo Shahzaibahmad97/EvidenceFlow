@@ -1,0 +1,11 @@
+Havenport Marine Supply
+Invoice Number: HM-4408
+Issue Date: 2026-03-11
+Currency: USD
+
+Mooring rope, 20m             3      €84.00     €252.00
+Cleat, stainless              4      €19.50      €78.00
+
+Subtotal                                       €330.00
+VAT                                             €66.00
+Total                                          €396.00

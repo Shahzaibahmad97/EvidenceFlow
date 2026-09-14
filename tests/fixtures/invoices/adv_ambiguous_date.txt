@@ -1,0 +1,11 @@
+Sable Interiors Ltd
+Invoice Number: SI-7741
+Invoice Date: 03/04/2026
+Currency: GBP
+
+Curtain rail, 2.4m            4      31.25      125.00
+Fitting service               1      75.00       75.00
+
+Subtotal                                        200.00
+VAT                                              40.00
+Total                                           240.00

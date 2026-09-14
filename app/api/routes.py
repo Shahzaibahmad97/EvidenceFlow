@@ -10,11 +10,13 @@ from app.api.schemas import (
     DocumentSummary,
     EventView,
     ExtractionView,
+    ValidationView,
 )
 from app.providers.base import ExtractionProvider
 from app.repositories import documents as repo
-from app.repositories.models import Document, Event, Extraction
+from app.repositories.models import Document, Event, Extraction, ValidationResult
 from app.services.extraction import extract_document
+from app.services.validation import validate_extraction
 
 router = APIRouter()
 
@@ -40,7 +42,9 @@ def extract(
 ) -> ExtractionView:
     document = _require(session, document_id)
     outcome = extract_document(session, document, provider)
-    return _extraction_view(outcome.extraction)
+    if outcome.succeeded:
+        validate_extraction(session, document, outcome.extraction)
+    return _extraction_view(session, outcome.extraction)
 
 
 @router.get("/documents/{document_id}", response_model=DocumentDetail)
@@ -52,7 +56,7 @@ def read_document(
     return DocumentDetail(
         **_summary(document).model_dump(),
         source_text=document.source_text,
-        extraction=_extraction_view(extraction) if extraction else None,
+        extraction=_extraction_view(session, extraction) if extraction else None,
         events=[_event_view(event) for event in repo.list_events(session, document_id)],
     )
 
@@ -68,8 +72,11 @@ def _summary(document: Document) -> DocumentSummary:
     return DocumentSummary(id=document.id, filename=document.filename, status=document.status)
 
 
-def _extraction_view(extraction: Extraction) -> ExtractionView:
+def _extraction_view(session: Session, extraction: Extraction) -> ExtractionView:
+    validation = repo.list_validation_results(session, extraction.id)
     return ExtractionView(
+        validation=[_validation_view(row) for row in validation],
+        accepted=all(row.outcome == "pass" for row in validation) if validation else None,
         id=extraction.id,
         status=extraction.status,
         schema_version=extraction.schema_version,
@@ -81,6 +88,10 @@ def _extraction_view(extraction: Extraction) -> ExtractionView:
         model=extraction.model,
         latency_ms=extraction.latency_ms,
     )
+
+
+def _validation_view(row: ValidationResult) -> ValidationView:
+    return ValidationView(rule=row.rule, outcome=row.outcome, message=row.message)
 
 
 def _event_view(event: Event) -> EventView:

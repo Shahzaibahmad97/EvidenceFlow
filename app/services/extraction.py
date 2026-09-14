@@ -69,22 +69,24 @@ def extract_document(
         status=ExtractionStatus.SUCCEEDED,
         raw_payload=result.raw,
         draft=draft.model_dump(mode="json"),
-        evidence=[_evidence_row(item) for item in evidence],
+        evidence=[item.to_row() for item in evidence],
         payload_hash=draft.payload_hash(),
         **metadata,
     )
 
     _record_evidence_events(session, document, extraction, evidence)
 
-    rejected = [item.field for item in evidence if not item.verified]
-    document.status = DocumentStatus.NEEDS_REVIEW if rejected else DocumentStatus.EXTRACTED
+    document.status = DocumentStatus.EXTRACTED
     repo.append_event(
         session,
         document_id=document.id,
         extraction_id=extraction.id,
         type=EventType.EXTRACTION_SUCCEEDED,
         actor=SYSTEM_ACTOR,
-        payload={"payload_hash": extraction.payload_hash, "unverified_fields": rejected},
+        payload={
+            "payload_hash": extraction.payload_hash,
+            "unverified_fields": [item.field for item in evidence if not item.verified],
+        },
     )
     return ExtractionOutcome(extraction=extraction, document=document)
 
@@ -141,17 +143,6 @@ def _record(session: Session, document: Document, **columns) -> Extraction:
     session.add(extraction)
     session.flush()
     return extraction
-
-
-def _evidence_row(item: EvidenceResult) -> dict[str, object]:
-    return {
-        "field": item.field,
-        "quote": item.quote,
-        "verified": item.verified,
-        "start": item.span.start if item.span else None,
-        "end": item.span.end if item.span else None,
-        "line": item.span.line if item.span else None,
-    }
 
 
 def _summarize(error: ValidationError) -> str:

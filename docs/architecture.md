@@ -98,3 +98,33 @@ SQLite during week 1, by the plan's explicit allowance, so the vertical slice wa
 not blocked on database setup. PostgreSQL from week 4, where the durable job table
 needs `SELECT ... FOR UPDATE SKIP LOCKED`. Nothing in the data access layer
 assumes SQLite beyond connection pooling.
+
+## Validation
+
+`app/domain/validation.py` holds eleven rules. They are pure functions over a
+`ValidationInput`: the parsed draft, the source text, the evidence results, the
+supplier and invoice numbers already seen, and today's date. They call no model
+and touch no database, so every rule is testable in isolation and the duplicate
+check is supplied by the caller rather than reached for.
+
+Each rule returns `pass`, `needs_review`, or `fail`:
+
+| Outcome | Meaning | Example |
+|---|---|---|
+| `pass` | nothing to answer for | totals add up |
+| `needs_review` | a person must decide | one minor unit of rounding drift, an ambiguous date, a currency symbol contradicting the code |
+| `fail` | the record cannot be correct | line items do not sum to the subtotal, unsupported currency, redelivered invoice number |
+
+Results are written to `validation_result`, never merged into the extraction
+payload. The model's proposal and our verdict on it stay separately readable, so
+a reviewer can see what was proposed and why it was refused.
+
+Routing is a single decision point in `app/services/validation.py`: all rules
+pass, or the document goes to `needs_review`. Extraction does not route — it
+records what happened and leaves the verdict to the rules.
+
+The distinction the rules exist to draw is between a draft that parses and a
+draft that could be true. A settlement discount printed below the line items
+yields a perfectly schema-valid draft whose lines sum to the wrong subtotal. A
+correctly extracted invoice in an unsupported currency is not a licence to write.
+A redelivered invoice with every field right is still a duplicate.

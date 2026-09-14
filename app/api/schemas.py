@@ -25,6 +25,12 @@ class EvidenceView(BaseModel):
     line: int | None = None
 
 
+class ValidationView(BaseModel):
+    rule: str
+    outcome: str
+    message: str = ""
+
+
 class ExtractionView(BaseModel):
     id: str
     status: str
@@ -32,6 +38,8 @@ class ExtractionView(BaseModel):
     payload_hash: str | None = None
     draft: dict[str, Any] | None = None
     evidence: list[EvidenceView] = []
+    validation: list[ValidationView] = []
+    accepted: bool | None = None
     error_code: str | None = None
     error_detail: str | None = None
     model: str | None = None

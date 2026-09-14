@@ -1,0 +1,12 @@
+Fenwick Electrical Services
+Invoice Number: FE-2026-77
+Issue Date: 2026-01-14
+Currency: GBP
+
+Item                     Qty   Rate    Net     VAT    Gross
+Consumer unit              1  340.00  340.00  68.00   408.00
+Emergency callout          2   95.00  190.00  38.00   228.00
+
+Net total                                     530.00
+VAT total                                     106.00
+Amount payable                                636.00

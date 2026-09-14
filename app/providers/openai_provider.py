@@ -21,7 +21,6 @@ def _strict_schema() -> dict[str, Any]:
 
 
 def _tighten(node: Any) -> None:
-    """Structured outputs require every object to be closed and fully required."""
     if isinstance(node, dict):
         node.pop("title", None)
         if node.get("type") == "object":
@@ -36,8 +35,6 @@ def _tighten(node: Any) -> None:
 
 
 class OpenAIProvider:
-    """Responses API with Structured Outputs. Model snapshot is pinned by config."""
-
     def __init__(self, client: Any, model: str, timeout_seconds: float = 60.0) -> None:
         self._client = client
         self._model = model

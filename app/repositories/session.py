@@ -15,10 +15,13 @@ def build_engine(database_url: str):
     if not database_url.startswith("sqlite"):
         return create_engine(database_url, future=True)
     kwargs = {"connect_args": {"check_same_thread": False}}
-    if ":memory:" in database_url or database_url == "sqlite://":
-        # One shared connection, otherwise every caller gets its own empty database.
+    if _is_in_memory(database_url):
         kwargs["poolclass"] = StaticPool
     return create_engine(database_url, future=True, **kwargs)
+
+
+def _is_in_memory(database_url: str) -> bool:
+    return ":memory:" in database_url or database_url == "sqlite://"
 
 
 def build_session_factory(settings: Settings) -> sessionmaker[Session]:

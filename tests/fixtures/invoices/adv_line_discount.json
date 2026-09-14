@@ -1,0 +1,50 @@
+{
+  "invoice_number": {
+    "value": "KH-3390",
+    "quote": "Invoice Number: KH-3390"
+  },
+  "supplier": {
+    "value": "Kestrel Hardware",
+    "quote": "Kestrel Hardware"
+  },
+  "currency": {
+    "value": "EUR",
+    "quote": "Currency: EUR"
+  },
+  "issue_date": {
+    "value": "2026-02-09",
+    "quote": "Issue Date: 2026-02-09"
+  },
+  "line_items": [
+    {
+      "description": "Power drill, 18V",
+      "quantity": "2",
+      "unit_price": "149.00",
+      "amount": "298.00"
+    },
+    {
+      "description": "Drill bit set",
+      "quantity": "1",
+      "unit_price": "42.00",
+      "amount": "42.00"
+    },
+    {
+      "description": "Trade discount",
+      "quantity": "1",
+      "unit_price": "-34.00",
+      "amount": "-34.00"
+    }
+  ],
+  "subtotal": {
+    "value": "306.00",
+    "quote": "Subtotal                                        306.00"
+  },
+  "tax": {
+    "value": "58.14",
+    "quote": "VAT 19%                                          58.14"
+  },
+  "total": {
+    "value": "364.14",
+    "quote": "Total                                           364.14"
+  }
+}

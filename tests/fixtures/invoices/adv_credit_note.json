@@ -1,0 +1,38 @@
+{
+  "invoice_number": {
+    "value": "CN-2026-0042",
+    "quote": "Invoice Number: CN-2026-0042"
+  },
+  "supplier": {
+    "value": "Bramley Produce Ltd",
+    "quote": "Bramley Produce Ltd"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-03-30",
+    "quote": "Issue Date: 2026-03-30"
+  },
+  "line_items": [
+    {
+      "description": "Returned stock, crates",
+      "quantity": "-8",
+      "unit_price": "22.50",
+      "amount": "-180.00"
+    }
+  ],
+  "subtotal": {
+    "value": "-180.00",
+    "quote": "Subtotal                                       -180.00"
+  },
+  "tax": {
+    "value": "-36.00",
+    "quote": "VAT 20%                                         -36.00"
+  },
+  "total": {
+    "value": "-216.00",
+    "quote": "Total                                          -216.00"
+  }
+}

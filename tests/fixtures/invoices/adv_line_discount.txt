@@ -1,0 +1,12 @@
+Kestrel Hardware
+Invoice Number: KH-3390
+Issue Date: 2026-02-09
+Currency: EUR
+
+Power drill, 18V              2     149.00      298.00
+Drill bit set                 1      42.00       42.00
+Trade discount                1     -34.00      -34.00
+
+Subtotal                                        306.00
+VAT 19%                                          58.14
+Total                                           364.14

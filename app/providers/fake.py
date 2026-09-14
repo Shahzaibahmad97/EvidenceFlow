@@ -14,8 +14,6 @@ FAKE_MODEL = "fake-extractor-1"
 
 
 class FakeProvider:
-    """Deterministic provider. The handler returns a payload or raises a ProviderError."""
-
     def __init__(self, handler: Handler, *, latency_ms: int = 0) -> None:
         self._handler = handler
         self._latency_ms = latency_ms

@@ -1,0 +1,11 @@
+Wellspring Water Services
+Invoice Number: WW-6120
+Issue Date: 2026-02-28
+Currency: GBP
+
+Cooler rental, quarterly      3      45.00      135.00
+Bottled refill, 19L          10      12.00      120.00
+
+Subtotal                                        255.00
+VAT 20%                                          51.00
+Total                                           366.00

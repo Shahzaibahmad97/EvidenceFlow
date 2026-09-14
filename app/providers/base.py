@@ -5,8 +5,6 @@ from typing import Any, Protocol
 
 
 class ProviderError(Exception):
-    """Base for every provider failure. Carries a stable machine-readable code."""
-
     code = "provider_error"
 
 
