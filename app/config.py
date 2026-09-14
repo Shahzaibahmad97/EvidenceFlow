@@ -10,6 +10,7 @@ class Settings:
     provider: str
     openai_model: str
     request_timeout_seconds: float
+    run_worker: bool
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -18,4 +19,5 @@ class Settings:
             provider=os.getenv("EVIDENCEFLOW_PROVIDER", "fake"),
             openai_model=os.getenv("EVIDENCEFLOW_OPENAI_MODEL", "gpt-4.1-2025-04-14"),
             request_timeout_seconds=float(os.getenv("EVIDENCEFLOW_TIMEOUT_SECONDS", "60")),
+            run_worker=os.getenv("EVIDENCEFLOW_RUN_WORKER", "false").lower() == "true",
         )

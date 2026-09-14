@@ -16,21 +16,23 @@ Synthetic data only. No real client documents are in this repository.
 
 ## Status
 
-Weeks 1-3 of six are complete: the typed extraction contract, verified evidence,
+Weeks 1-4 of six are complete: the typed extraction contract, verified evidence,
 the append-only event log, the provider boundary, deterministic business
-validation, a 20-document evaluation with hand-written ground truth, and a
-version-bound approval gate with an idempotent destination write. Durable
-recovery and the causal evaluation follow. See [docs/PLAN.md](docs/PLAN.md) and
-[evals/report.md](evals/report.md).
+validation, a 20-document evaluation with hand-written ground truth, a
+version-bound approval gate with an idempotent destination write, and a durable
+job queue that survives worker interruption. The causal evaluation and the
+buyer-facing release follow. See [docs/PLAN.md](docs/PLAN.md),
+[evals/report.md](evals/report.md) and [docs/runbook.md](docs/runbook.md).
 
 ## Quickstart
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                        # 98 tests, no API key required
+pytest                        # 127 tests, no API key required
 python scripts/demo.py        # extracts the five sample invoices, prints the evidence
 python scripts/demo_approval.py  # approval, idempotent write, twenty replays
+python scripts/demo_recovery.py  # 503, worker death mid-write, recovery, one record
 python evals/run.py           # replays the 20-document dataset, regenerates the report
 ```
 
@@ -59,6 +61,9 @@ uvicorn app.api.app:create_app --factory --reload
 | POST   | `/documents/{id}/extract`       | extract, then validate                      |
 | POST   | `/documents/{id}/approve`       | approve the current version (`X-Actor`)     |
 | POST   | `/documents/{id}/write`         | write to the mock CRM, once per version     |
+| POST   | `/documents/{id}/jobs`          | queue extraction or a write for the worker  |
+| GET    | `/jobs/{id}`                    | job status, attempts, failure kind          |
+| GET    | `/jobs/review`                  | jobs a person needs to look at              |
 | GET    | `/documents/{id}`               | draft, evidence, validation, approval, events |
 | GET    | `/health`                       | liveness                                    |
 
@@ -110,6 +115,24 @@ approved payload hash. `crm_write.idempotency_key` is `UNIQUE`, the mock
 destination deduplicates on the same key, and the document transition to
 `written` is one guarded `UPDATE`. Eight concurrent writers produce one record.
 
+## Failure recovery
+
+```
+$ python scripts/demo_recovery.py
+1. extract job succeeded, document validated
+2. destination returned 503 -> job pending, attempt 1
+   retry scheduled, classified transient: crm_unavailable: 503 from destination
+3. worker claimed job (attempt 2) then died mid-write
+4. new worker reclaimed the expired lease -> succeeded, attempt 3
+5. document status written, destination records 1
+6. audit trail survived: ... write_attempted -> write_failed -> write_attempted -> write_succeeded
+```
+
+Jobs live in a database table, claimed by a guarded `UPDATE` and held by a lease.
+No broker, no second service. Retries are classified by exception type, never by
+string matching, and anything unrecognised is treated as permanent. See
+[docs/runbook.md](docs/runbook.md).
+
 ## Layout
 
 ```
@@ -118,7 +141,8 @@ app/
   domain/        schema, evidence verification, event and status vocabulary
   providers/     provider protocol, fake provider, OpenAI Responses adapter
   repositories/  SQLAlchemy models and data access
-  services/      extraction and validation orchestration
+  services/      extraction, validation, approval and write orchestration
+  workflows/     durable job queue and the worker
 tests/
   contract/      schema, evidence, and provider-adapter behaviour
   integration/   the slice through persistence and HTTP

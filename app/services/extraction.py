@@ -19,6 +19,7 @@ SYSTEM_ACTOR = "system"
 class ExtractionOutcome:
     extraction: Extraction
     document: Document
+    error: ProviderError | None = None
 
     @property
     def succeeded(self) -> bool:
@@ -39,7 +40,7 @@ def extract_document(
     try:
         result = provider.extract(document.source_text)
     except ProviderError as exc:
-        return _fail(session, document, code=exc.code, detail=str(exc))
+        return _fail(session, document, error=exc, code=exc.code, detail=str(exc))
 
     metadata = {
         "model": result.model,
@@ -53,11 +54,13 @@ def extract_document(
     try:
         draft = InvoiceDraft.model_validate(result.raw)
     except ValidationError as exc:
+        malformed = MalformedProviderOutput(_summarize(exc))
         return _fail(
             session,
             document,
-            code=MalformedProviderOutput.code,
-            detail=_summarize(exc),
+            error=malformed,
+            code=malformed.code,
+            detail=str(malformed),
             raw_payload=result.raw,
             **metadata,
         )
@@ -115,7 +118,13 @@ def _record_evidence_events(
 
 
 def _fail(
-    session: Session, document: Document, *, code: str, detail: str, **columns
+    session: Session,
+    document: Document,
+    *,
+    error: ProviderError,
+    code: str,
+    detail: str,
+    **columns,
 ) -> ExtractionOutcome:
     extraction = _record(
         session,
@@ -134,7 +143,7 @@ def _fail(
         actor=SYSTEM_ACTOR,
         payload={"error_code": code, "error_detail": detail},
     )
-    return ExtractionOutcome(extraction=extraction, document=document)
+    return ExtractionOutcome(extraction=extraction, document=document, error=error)
 
 
 def _record(session: Session, document: Document, **columns) -> Extraction:

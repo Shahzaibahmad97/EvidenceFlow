@@ -16,4 +16,6 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: pytest
       - run: python scripts/demo.py
+      - run: python scripts/demo_approval.py
+      - run: python scripts/demo_recovery.py
       - run: python evals/run.py --check
