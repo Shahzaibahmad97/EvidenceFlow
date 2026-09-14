@@ -28,6 +28,7 @@ class Worker:
     crm: CrmClient
     worker_id: str = "worker-1"
     lease: timedelta = DEFAULT_LEASE
+    allow_value_fallback: bool = False
     processed: list[str] = field(default_factory=list)
 
     def run_once(self) -> Job | None:
@@ -68,7 +69,12 @@ class Worker:
             return LookupError(f"document {job.document_id} no longer exists")
         try:
             if job.type == JobType.EXTRACT:
-                outcome = extract_document(session, document, self.provider)
+                outcome = extract_document(
+                    session,
+                    document,
+                    self.provider,
+                    allow_value_fallback=self.allow_value_fallback,
+                )
                 if outcome.error is not None:
                     return outcome.error
                 validate_extraction(session, document, outcome.extraction)

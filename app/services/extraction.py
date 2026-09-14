@@ -27,7 +27,11 @@ class ExtractionOutcome:
 
 
 def extract_document(
-    session: Session, document: Document, provider: ExtractionProvider
+    session: Session,
+    document: Document,
+    provider: ExtractionProvider,
+    *,
+    allow_value_fallback: bool = False,
 ) -> ExtractionOutcome:
     repo.append_event(
         session,
@@ -65,7 +69,9 @@ def extract_document(
             **metadata,
         )
 
-    evidence = verify_draft(draft, document.source_text)
+    evidence = verify_draft(
+        draft, document.source_text, allow_value_fallback=allow_value_fallback
+    )
     extraction = _record(
         session,
         document,

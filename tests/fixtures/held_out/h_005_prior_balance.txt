@@ -1,0 +1,14 @@
+Tamar Plant Hire
+Invoice Number: TP-7714
+Issue Date: 2026-03-24
+Currency: GBP
+
+Mini excavator, weekly rate     2     430.00      860.00
+Operator, daily                 5     180.00      900.00
+
+Subtotal                                         1760.00
+VAT 20%                                           352.00
+Total                                            2112.00
+
+Balance brought forward from INV TP-7602          640.00
+Total amount now due                             2752.00

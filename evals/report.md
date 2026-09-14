@@ -1,103 +1,127 @@
-# Evaluation v1 — deterministic validation
+# Evaluation v2 — causal labels and cost per accepted outcome
 
-Generated 2026-09-14 19:05 UTC from `evals/dataset.jsonl` via the `fake` provider.
+Generated 2026-09-14 19:32 UTC. Provider `fake`, model `fake-extractor-1`, prompt `ccbc7498ddd41343`.
 Regenerate with `python evals/run.py`.
+
+Runs marked `fake` are **replayed** from committed fixtures, not live model calls. Live runs use `--provider openai` and are labelled as such in the header above.
 
 ## Headline
 
-- Documents: **20** (5 routine, 15 hard)
-- Field accuracy: **123/123** (100%)
-- Routed as the hand-written label expects: **20/20** (100%)
-- Blocking rules matched the label: **20/20**
-- Reached `validated`: **8/20** — 4 to review, 6 failed, 2 rejected at the schema boundary
+- Documents: **30** — 20 development, 10 held out
+- Accepted and written: **13/30** (43%)
+- Field accuracy: **191/191** (100%)
+- Routed as the hand-written label expects: **30/30**
+- Causal label matched the hand-written label: **30/30**
+- Duplicate destination records: **0**
+- Destination calls: 13 for 13 records
+- Retries: **0**
+- Extraction latency: p50 0 ms, p95 0 ms — a replayed run has no model call to time
+- Tokens: 2,947 in, 5,822 out
 
-Field accuracy is scored only where a correct answer exists. 3 field(s) are marked unscorable because the document itself is ambiguous or self-contradictory — those are review work by definition, not extraction errors.
+## Cost per accepted outcome
+
+Every figure below rests on stated assumptions, not measurements:
+
+- model input $2.50 per million tokens
+- model output $10.00 per million tokens
+- reviewer $35.00 per hour
+- 4 minutes of review per flagged document
+
+| Component | Amount |
+|---|---|
+| Model | $0.0656 |
+| Reviewer (17 documents) | $39.6667 |
+| **Total** | **$39.7323** |
+| Accepted records | 13 |
+| **Cost per accepted record** | **$3.0563** |
+
+Reviewer time dominates, and that is the finding. A cost figure quoting only tokens would be smaller, more flattering, and wrong.
+
+## By split
+
+| Split | Documents | Field accuracy | Routed as expected | Labelled as expected | Accepted |
+|---|---|---|---|---|---|
+| dev | 20 | 123/123 (100%) | 20/20 | 20/20 | 8/20 |
+| held_out | 10 | 68/68 (100%) | 10/10 | 10/10 | 5/10 |
 
 ## By difficulty
 
-| Cohort | Documents | Field accuracy | Routed as expected | Reached validated |
+| Cohort | Documents | Field accuracy | Accepted | Sent to a person |
 |---|---|---|---|---|
-| routine | 5 | 35/35 (100%) | 5/5 | 5/5 |
-| hard | 15 | 88/88 (100%) | 15/15 | 3/15 |
+| routine | 6 | 42/42 (100%) | 6/6 | 0/6 |
+| hard | 24 | 149/149 (100%) | 7/24 | 17/24 |
+
+## Earliest causal error
+
+Each blocked document is labelled by its root cause, not by the damage that followed it. A document whose lines were mis-read *and* whose totals then failed to add up is a selection error, once.
+
+| Label | Documents | Meaning |
+|---|---|---|
+| `selection` | 4 | the model took the wrong value from the document |
+| `completeness` | 1 | a required field was not there to take |
+| `truthfulness` | 2 | the evidence offered does not appear in the source |
+| `postcondition` | 10 | extraction was faithful; the record still cannot be written |
+
+10 of 17 blocked documents are postcondition failures. The model was right and the answer was still no — because the document contradicts itself, repeats an earlier invoice, or falls outside policy. No prompt change addresses those.
 
 ## Per document
 
-| Document | Expected | Actual | Fields | Blocking rules |
-|---|---|---|---|---|
-| `inv_001_acme` | validated | validated | 7/7 | — |
-| `inv_002_northwind` | validated | validated | 7/7 | — |
-| `inv_003_bluepeak` | validated | validated | 7/7 | — |
-| `inv_004_meridian` | validated | validated | 7/7 | — |
-| `inv_005_calder` | validated | validated | 7/7 | — |
-| `fail_missing_invoice_number` | extraction_failed | extraction_failed | n/a | — |
-| `fail_bad_currency` | extraction_failed | extraction_failed | n/a | — |
-| `fail_unverifiable_quote` | needs_review | needs_review | 7/7 | `evidence_verified` |
-| `adv_ambiguous_date` | needs_review | needs_review | 6/6 | `issue_date_unambiguous` |
-| `adv_line_discount` | validated | validated | 7/7 | — |
-| `adv_document_discount` | fail | fail | 7/7 | `line_items_sum_to_subtotal` |
-| `adv_per_line_tax` | fail | fail | 7/7 | `line_item_arithmetic`, `line_items_sum_to_subtotal` |
-| `adv_rounding_drift` | needs_review | needs_review | 7/7 | `subtotal_plus_tax_equals_total` |
-| `adv_multipage_subtotal` | validated | validated | 7/7 | — |
-| `adv_currency_mismatch` | needs_review | needs_review | 6/6 | `currency_agrees_with_source` |
-| `adv_duplicate_number` | fail | fail | 7/7 | `invoice_number_not_duplicate` |
-| `adv_credit_note` | validated | validated | 7/7 | — |
-| `adv_credit_note_mis_signed` | fail | fail | 7/7 | `line_items_sum_to_subtotal`, `credit_note_consistent` |
-| `adv_totals_dont_add` | fail | fail | 6/6 | `subtotal_plus_tax_equals_total` |
-| `adv_unsupported_currency` | fail | fail | 7/7 | `supported_currency` |
+| Document | Split | Expected | Actual | Label | Fields | Jobs | Retries |
+|---|---|---|---|---|---|---|---|
+| `inv_001_acme` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `inv_002_northwind` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `inv_003_bluepeak` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `inv_004_meridian` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `inv_005_calder` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `fail_missing_invoice_number` | dev | extraction_failed | extraction_failed | completeness | n/a | 1 | 0 |
+| `fail_bad_currency` | dev | extraction_failed | extraction_failed | selection | n/a | 1 | 0 |
+| `fail_unverifiable_quote` | dev | needs_review | needs_review | truthfulness | 7/7 | 1 | 0 |
+| `adv_ambiguous_date` | dev | needs_review | needs_review | postcondition | 6/6 | 1 | 0 |
+| `adv_line_discount` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `adv_document_discount` | dev | fail | fail | selection | 7/7 | 1 | 0 |
+| `adv_per_line_tax` | dev | fail | fail | selection | 7/7 | 1 | 0 |
+| `adv_rounding_drift` | dev | needs_review | needs_review | postcondition | 7/7 | 1 | 0 |
+| `adv_multipage_subtotal` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `adv_currency_mismatch` | dev | needs_review | needs_review | postcondition | 6/6 | 1 | 0 |
+| `adv_duplicate_number` | dev | fail | fail | postcondition | 7/7 | 1 | 0 |
+| `adv_credit_note` | dev | validated | validated | — | 7/7 | 2 | 0 |
+| `adv_credit_note_mis_signed` | dev | fail | fail | postcondition | 7/7 | 1 | 0 |
+| `adv_totals_dont_add` | dev | fail | fail | postcondition | 6/6 | 1 | 0 |
+| `adv_unsupported_currency` | dev | fail | fail | postcondition | 7/7 | 1 | 0 |
+| `h_001_wren` | held_out | validated | validated | — | 7/7 | 2 | 0 |
+| `h_002_two_line_supplier` | held_out | validated | validated | — | 7/7 | 2 | 0 |
+| `h_003_free_item` | held_out | validated | validated | — | 7/7 | 2 | 0 |
+| `h_004_paraphrased_total` | held_out | needs_review | needs_review | truthfulness | 7/7 | 1 | 0 |
+| `h_005_prior_balance` | held_out | fail | fail | selection | 7/7 | 1 | 0 |
+| `h_006_textual_date` | held_out | validated | validated | — | 7/7 | 2 | 0 |
+| `h_007_ambiguous_date` | held_out | needs_review | needs_review | postcondition | 6/6 | 1 | 0 |
+| `h_008_symbol_disagrees` | held_out | needs_review | needs_review | postcondition | 6/6 | 1 | 0 |
+| `h_009_thousands_separator` | held_out | validated | validated | — | 7/7 | 2 | 0 |
+| `h_010_redelivered` | held_out | fail | fail | postcondition | 7/7 | 1 | 0 |
 
-## Schema-valid, business-invalid
+## Held-out documents
 
-10 of 20 documents produced output the model's own schema accepts and that ordinary code refused. This is the case the project exists to make: valid JSON is not a valid business outcome.
+These ten were written after the rules were fixed and were never used to tune them. No rule, threshold, or prompt was changed after seeing these results.
 
-**`fail_unverifiable_quote`** — The subtotal quote paraphrases the document. Unverifiable evidence, so the value is not accepted.
-
-- Routed to `needs_review` by `evidence_verified`
-
-**`adv_ambiguous_date`** — 03/04/2026 is day-first or month-first; no other date in the document disambiguates it, so a human must decide.
-
-- Routed to `needs_review` by `issue_date_unambiguous`
-- No correct answer exists for: issue_date
-
-**`adv_document_discount`** — The settlement discount sits below the line items. Captured lines sum to 1200.00, subtotal is 1140.00. Schema-valid, arithmetically incoherent.
-
-- Routed to `fail` by `line_items_sum_to_subtotal`
-
-**`adv_per_line_tax`** — Per-line VAT columns. The model took the gross column as the line amount, so lines sum to 636.00 against a 530.00 subtotal.
-
-- Routed to `fail` by `line_item_arithmetic`, `line_items_sum_to_subtotal`
-
-**`adv_rounding_drift`** — 412.55 + 78.38 = 490.93, printed as 490.94. One minor unit of drift: a reviewer decides, not a hard reject.
-
-- Routed to `needs_review` by `subtotal_plus_tax_equals_total`
-
-**`adv_currency_mismatch`** — Header says USD, every amount is prefixed with a euro sign. The document contradicts itself; no extraction is correct.
-
-- Routed to `needs_review` by `currency_agrees_with_source`
-- No correct answer exists for: currency
-
-**`adv_duplicate_number`** — A second delivery of INV-2026-0001. Every field is extracted correctly and the document must still be blocked.
-
-- Routed to `fail` by `invoice_number_not_duplicate`
-
-**`adv_credit_note_mis_signed`** — The credit note prints its line amount unsigned. A negative total with a positive line is not a coherent record.
-
-- Routed to `fail` by `line_items_sum_to_subtotal`, `credit_note_consistent`
-
-**`adv_totals_dont_add`** — The printed total is wrong on the document itself: 255.00 + 51.00 = 306.00. Faithful extraction of a wrong document.
-
-- Routed to `fail` by `subtotal_plus_tax_equals_total`
-- No correct answer exists for: total
-
-**`adv_unsupported_currency`** — Perfectly extracted, outside the supported currency set. Correct extraction is not authorization to write.
-
-- Routed to `fail` by `supported_currency`
+All ten routed and labelled as their hand-written labels said they would. That is a real result and a narrow one: the held-out set shares an author and a generator with the development set.
 
 ## Label mismatches
 
-None. Every document routed the way its hand-written label said it should.
+None.
+
+## Attempted improvement: fall back to the field value when a quote cannot be found
+
+**Change.** When a model-supplied quote is not present in the source, look for the extracted *value* instead and accept the span it lands on.
+
+**Result.** Accepted records 13 -> 15. Documents that changed outcome: 2 (fail_unverifiable_quote, h_004_paraphrased_total)
+
+**Decision: rejected.** It buys acceptance by giving up the guarantee the project exists to make. A quote the model invented is not evidence, and finding the number somewhere else in the document does not make it so — the number appears in a total, a line item and a payment slip, and the fallback cannot tell which one the model meant. Every document it newly accepted (fail_unverifiable_quote, h_004_paraphrased_total) would have been accepted on evidence nobody can check.
+
+The code path stays in the repository, off by default, because the experiment is part of the evidence. `allow_value_fallback` is never set in production.
 
 ## What this does not measure
 
-- Ground truth is hand-written, but the documents are synthetic and written by the same person who wrote the rules. Accuracy here is a floor on difficulty, not a forecast of live performance.
-- The fake provider replays a fixed payload per document, so this run measures the validation layer, not model quality. Week 5 adds held-out documents and live runs.
-- No latency, token, or cost figure is reported: the deterministic provider has no cost, and reporting one would be theatre.
+- The documents are synthetic and share an author with the rules. Accuracy here is a statement about the difficulty of this set, not a forecast of live performance.
+- A `fake` run replays committed payloads, so it measures the validation, approval and write layers rather than model quality. Only a live run measures the model.
+- Retries are zero in a clean run because nothing failed. The retry and recovery paths are exercised by the test suite and by `scripts/demo_recovery.py`, not here.
+- Reviewer minutes are assumed, not observed. Nobody reviewed these documents.

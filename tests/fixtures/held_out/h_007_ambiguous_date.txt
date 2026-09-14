@@ -1,0 +1,10 @@
+Corbridge Joinery Supplies
+Invoice Number: CJ-9040
+Invoice Date: 05/06/2026
+Currency: GBP
+
+Softwood batten, 2.4m          40       6.15      246.00
+
+Subtotal                                          246.00
+VAT 20%                                            49.20
+Total                                             295.20

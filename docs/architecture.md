@@ -204,3 +204,37 @@ The web process can host the worker in a background thread
 (`EVIDENCEFLOW_RUN_WORKER=true`) or the worker can run separately. The job table
 is the source of truth either way, which is what makes a free single-process
 deployment behave identically to a two-service one.
+
+## Evaluation
+
+The evaluation replays documents through the real pipeline — worker, jobs,
+extraction, validation, approval, write — rather than calling the services
+directly. Retries, attempt counts and destination calls are therefore measured,
+not asserted.
+
+Trajectories are reconstructed from rows the application already writes: the
+event log, `extraction`, `validation_result`, `crm_write` and `job`. Week 1 put
+the event log in for this reason; no instrumentation was added for the report.
+
+Each blocked document carries one label, the **earliest causal error**:
+
+| Label | Meaning |
+|---|---|
+| `selection` | the model took the wrong value from the document |
+| `completeness` | a required field was not there to take |
+| `truthfulness` | the evidence offered does not appear in the source |
+| `postcondition` | extraction was faithful; the record still cannot be written |
+
+Labels are derived from a precedence table in `evals/labels.py`, not from the
+order rules happen to be evaluated in. A document whose lines were mis-read and
+whose totals then failed to add up is one selection error, not two failures. A
+mis-signed credit note is a postcondition failure even though a sum rule fires
+first, because the sum is the symptom.
+
+Every document also carries a hand-written expected label. The harness compares
+its derived label against the written one and fails CI on any mismatch, so the
+taxonomy cannot drift quietly.
+
+`--split held_out` runs only the ten documents held back. They were written after
+the rules were fixed, and no rule, threshold or prompt was changed after seeing
+their results.

@@ -1,0 +1,11 @@
+Padstow Coffee Roasters
+Invoice Number: PC-0881
+Issue Date: 2026-04-02
+Currency: GBP
+
+Espresso beans, 1kg             8      22.00      176.00
+Sample pack (promotional)       1       0.00        0.00
+
+Subtotal                                          176.00
+VAT 20%                                            35.20
+Total                                             211.20
