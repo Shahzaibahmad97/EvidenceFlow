@@ -1,0 +1,84 @@
+from __future__ import annotations
+
+import uuid
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.types import JSON
+
+from app.domain.events import DocumentStatus, EventType, ExtractionStatus
+
+
+def _uuid() -> str:
+    return str(uuid.uuid4())
+
+
+def _now() -> datetime:
+    return datetime.now(UTC)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class Document(Base):
+    __tablename__ = "document"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    filename: Mapped[str] = mapped_column(String(255))
+    source_text: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32), default=DocumentStatus.RECEIVED)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    extractions: Mapped[list["Extraction"]] = relationship(
+        back_populates="document", order_by="Extraction.created_at"
+    )
+
+
+class Extraction(Base):
+    __tablename__ = "extraction"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    document_id: Mapped[str] = mapped_column(ForeignKey("document.id"), index=True)
+    status: Mapped[str] = mapped_column(String(32))
+    schema_version: Mapped[str] = mapped_column(String(16))
+    raw_payload: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    draft: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    evidence: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON, nullable=True)
+    payload_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    request_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    document: Mapped[Document] = relationship(back_populates="extractions")
+
+    @property
+    def succeeded(self) -> bool:
+        return self.status == ExtractionStatus.SUCCEEDED
+
+
+class Event(Base):
+    """Append-only. Rows are never updated or deleted."""
+
+    __tablename__ = "event"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    document_id: Mapped[str] = mapped_column(ForeignKey("document.id"), index=True)
+    extraction_id: Mapped[str | None] = mapped_column(
+        ForeignKey("extraction.id"), nullable=True
+    )
+    type: Mapped[str] = mapped_column(String(48))
+    actor: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+EVENT_TYPES = {member.value for member in EventType}

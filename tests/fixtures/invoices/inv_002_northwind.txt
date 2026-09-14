@@ -1,0 +1,14 @@
+Northwind Trading Company
+Invoice
+
+Bill To: EvidenceFlow Demo Ltd
+Invoice No. NW-88214
+Date of Issue: 2026-02-17
+All amounts in EUR
+
+  1 x Warehouse pallet rack          1      340.00      340.00
+  2 x Shelf divider, steel           4       22.75       91.00
+
+                          Net total              431.00
+                          Tax (19%)               81.89
+                          Amount due             512.89

@@ -1,0 +1,38 @@
+{
+  "invoice_number": {
+    "value": "LC-2026-118",
+    "quote": "Invoice Number: LC-2026-118"
+  },
+  "supplier": {
+    "value": "Lakeside Catering Co.",
+    "quote": "Lakeside Catering Co."
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-03-27",
+    "quote": "Issue Date: 2026-03-27"
+  },
+  "line_items": [
+    {
+      "description": "Buffet lunch, 40 covers",
+      "quantity": "1",
+      "unit_price": "560.00",
+      "amount": "560.00"
+    }
+  ],
+  "subtotal": {
+    "value": "560.00",
+    "quote": "Subtotal of 560.00 before VAT"
+  },
+  "tax": {
+    "value": "112.00",
+    "quote": "VAT                                           112.00"
+  },
+  "total": {
+    "value": "672.00",
+    "quote": "Total                                         672.00"
+  }
+}

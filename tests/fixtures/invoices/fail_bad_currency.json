@@ -1,0 +1,38 @@
+{
+  "invoice_number": {
+    "value": "POS-4412",
+    "quote": "Invoice Number: POS-4412"
+  },
+  "supplier": {
+    "value": "Pacific Office Supply",
+    "quote": "Pacific Office Supply"
+  },
+  "currency": {
+    "value": "US$",
+    "quote": "Currency: US$"
+  },
+  "issue_date": {
+    "value": "2026-03-22",
+    "quote": "Issue Date: 2026-03-22"
+  },
+  "line_items": [
+    {
+      "description": "Desk lamp",
+      "quantity": "3",
+      "unit_price": "38.00",
+      "amount": "114.00"
+    }
+  ],
+  "subtotal": {
+    "value": "114.00",
+    "quote": "Subtotal                                      114.00"
+  },
+  "tax": {
+    "value": "9.12",
+    "quote": "Tax                                             9.12"
+  },
+  "total": {
+    "value": "123.12",
+    "quote": "Total                                         123.12"
+  }
+}

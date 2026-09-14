@@ -1,0 +1,50 @@
+{
+  "invoice_number": {
+    "value": "ML-2026-3310",
+    "quote": "INVOICE #: ML-2026-3310"
+  },
+  "supplier": {
+    "value": "Meridian Logistics GmbH",
+    "quote": "Meridian Logistics GmbH"
+  },
+  "currency": {
+    "value": "EUR",
+    "quote": "CCY: EUR"
+  },
+  "issue_date": {
+    "value": "2026-04-11",
+    "quote": "ISSUE DATE: 2026-04-11"
+  },
+  "line_items": [
+    {
+      "description": "Freight forwarding, Rotterdam to Hamburg",
+      "quantity": "1",
+      "unit_price": "1250.00",
+      "amount": "1250.00"
+    },
+    {
+      "description": "Customs handling fee",
+      "quantity": "3",
+      "unit_price": "45.00",
+      "amount": "135.00"
+    },
+    {
+      "description": "Fuel surcharge",
+      "quantity": "1",
+      "unit_price": "98.40",
+      "amount": "98.40"
+    }
+  ],
+  "subtotal": {
+    "value": "1483.40",
+    "quote": "Subtotal: 1483.40"
+  },
+  "tax": {
+    "value": "281.85",
+    "quote": "VAT at 19%: 281.85"
+  },
+  "total": {
+    "value": "1765.25",
+    "quote": "Grand total: 1765.25"
+  }
+}

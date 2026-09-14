@@ -1,0 +1,10 @@
+Pacific Office Supply
+Invoice Number: POS-4412
+Issue Date: 2026-03-22
+Currency: US$
+
+Desk lamp                   3      38.00      114.00
+
+Subtotal                                      114.00
+Tax                                             9.12
+Total                                         123.12
