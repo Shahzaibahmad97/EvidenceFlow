@@ -19,3 +19,9 @@ jobs:
       - run: python scripts/demo_approval.py
       - run: python scripts/demo_recovery.py
       - run: python evals/run.py --check
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t evidenceflow .

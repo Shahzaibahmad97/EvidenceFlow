@@ -16,20 +16,17 @@ Synthetic data only. No real client documents are in this repository.
 
 ## Status
 
-Weeks 1-5 of six are complete: the typed extraction contract, verified evidence,
-the append-only event log, the provider boundary, deterministic business
-validation, a version-bound approval gate with an idempotent destination write,
-a durable job queue that survives worker interruption, and a 30-document
-evaluation with ten held-out cases, causal error labels and cost per accepted
-outcome. The buyer-facing release follows. See [docs/PLAN.md](docs/PLAN.md),
-[evals/report.md](evals/report.md) and [docs/runbook.md](docs/runbook.md).
+All six weeks are complete. Start with the
+[case study](docs/case-study.md) for what was built and what it measures, the
+[evaluation report](evals/report.md) for the numbers, and
+[docs/runbook.md](docs/runbook.md) for how it recovers.
 
 ## Quickstart
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                        # 151 tests, no API key required
+pytest                        # 180 tests, no API key required
 python scripts/demo.py        # extracts the five sample invoices, prints the evidence
 python scripts/demo_approval.py  # approval, idempotent write, twenty replays
 python scripts/demo_recovery.py  # 503, worker death mid-write, recovery, one record
@@ -49,11 +46,23 @@ python scripts/demo.py --provider openai
 The model snapshot is pinned by configuration, never a floating alias, so results
 stay reproducible.
 
-## API
+## Running the whole thing
 
 ```bash
-uvicorn app.api.app:create_app --factory --reload
+docker compose up
 ```
+
+API and worker as separate services against Postgres. The review screen is at
+<http://localhost:8000/review>, seeded with all thirty synthetic documents.
+
+Or, without Docker:
+
+```bash
+EVIDENCEFLOW_SEED_ON_START=true EVIDENCEFLOW_RUN_WORKER=true \
+  uvicorn app.api.app:create_app --factory --reload
+```
+
+## API
 
 | Method | Path                            | Purpose                                     |
 |--------|---------------------------------|---------------------------------------------|
@@ -66,6 +75,7 @@ uvicorn app.api.app:create_app --factory --reload
 | GET    | `/jobs/review`                  | jobs a person needs to look at              |
 | GET    | `/documents/{id}`               | draft, evidence, validation, approval, events |
 | GET    | `/health`                       | liveness                                    |
+| GET    | `/review`                       | review screen: evidence, validation, approval |
 
 ## Sample output
 
@@ -145,6 +155,16 @@ No broker, no second service. Retries are classified by exception type, never by
 string matching, and anything unrecognised is treated as permanent. See
 [docs/runbook.md](docs/runbook.md).
 
+## Review screen
+
+`/review` lists every document with its status and blocking rules. A document page
+shows the source with each verified evidence span highlighted, the proposed
+fields, all eleven validation results, and the event trail.
+
+The screen is a view over server state, never a source of truth. The approve form
+carries the payload hash it was rendered with, and the server refuses it if the
+document has changed since — a stale tab cannot approve a version nobody read.
+
 ## Layout
 
 ```
@@ -162,6 +182,7 @@ tests/
 evals/
   dataset.jsonl  hand-written ground truth and expected routing
   run.py         replays the dataset and regenerates report.md
-docs/            plan, architecture, deployment
-scripts/demo.py  runnable vertical slice
+docs/            case study, architecture, runbook, deployment, demo script
+scripts/         runnable demos: extraction, approval, recovery
+Dockerfile, docker-compose.yml
 ```

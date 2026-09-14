@@ -1,6 +1,6 @@
 # Evaluation v2 — causal labels and cost per accepted outcome
 
-Generated 2026-09-14 19:32 UTC. Provider `fake`, model `fake-extractor-1`, prompt `ccbc7498ddd41343`.
+Generated 2026-09-14 22:18 UTC. Provider `fake`, model `fake-extractor-1`, prompt `ccbc7498ddd41343`.
 Regenerate with `python evals/run.py`.
 
 Runs marked `fake` are **replayed** from committed fixtures, not live model calls. Live runs use `--provider openai` and are labelled as such in the header above.

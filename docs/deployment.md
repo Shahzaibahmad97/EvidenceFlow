@@ -42,17 +42,17 @@ rather than hiding.
 
 ## What is still missing
 
-| Needed | Status | Week |
-|---|---|---|
-| `Dockerfile` and `docker-compose.yml` | not written | 6 |
-| Postgres schema creation beyond `create_all` | not written; fine for a demo, Alembic before anything real | 6 |
-| A review screen | not written; today the demo is the OpenAPI page at `/docs` | 6 |
-| Seeded synthetic documents on boot | not written | 6 |
-| Request size limits and basic rate limiting | not written | before any public URL |
-| A worker process | week 4 work | 4 |
+| Needed | Status |
+|---|---|
+| `Dockerfile` and `docker-compose.yml` | written; the image build itself has not been run in CI-less environments, so verify it once locally |
+| Postgres schema creation beyond `create_all` | still outstanding. Fine for a demo, Alembic before anything real |
+| A review screen | done, at `/review` |
+| Seeded synthetic documents on boot | done, `EVIDENCEFLOW_SEED_ON_START=true`, which also queues each document for extraction |
+| Request size limits and rate limiting | done, `app/api/limits.py` |
+| A worker process | done, in-process or as its own service |
 
-None of these block the plan. They are week 6 items, and the plan already puts
-deployment there.
+The only real gap before a public URL is schema migration, and only if the
+demo is expected to survive a schema change without being reseeded.
 
 ## Week 4 consequence
 
@@ -65,7 +65,7 @@ identically; the case study should say which shape the demo is running.
 This is also why the plan chose a database-backed job table over Redis and
 Celery: the free-tier deployment needs no second service and no broker.
 
-## Deployment steps, when week 6 arrives
+## Deployment steps
 
 1. Create a Neon project, copy the pooled connection string.
 2. Create a Render web service from the repository, Docker runtime.
@@ -74,13 +74,16 @@ Celery: the free-tier deployment needs no second service and no broker.
    ```
    EVIDENCEFLOW_DATABASE_URL=<neon pooled connection string>
    EVIDENCEFLOW_PROVIDER=fake
+   EVIDENCEFLOW_RUN_WORKER=true
+   EVIDENCEFLOW_SEED_ON_START=true
    ```
 
    No `OPENAI_API_KEY`.
 4. Point the health check at `/health`.
-5. Seed the synthetic documents on first boot.
-6. Confirm the public slice: upload, extract, approve, write, then replay the
-   write and show one record.
+5. Open `/review`. Thirty documents should be seeded and already processed:
+   13 validated, 15 in review, 2 refused at the schema boundary.
+6. Confirm the public slice: approve a validated document, write it, then press
+   write again and show the same record.
 
 ## Cost
 
