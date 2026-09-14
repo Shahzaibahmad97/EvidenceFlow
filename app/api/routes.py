@@ -11,16 +11,20 @@ from app.api.schemas import (
     DocumentSummary,
     EventView,
     ExtractionView,
+    JobCreate,
+    JobView,
     ValidationView,
     WriteView,
 )
 from app.domain.approval import ApprovalError, ApprovalMissing
+from app.domain.jobs import JobType
 from app.providers.base import ExtractionProvider
 from app.providers.crm import CrmClient, CrmError
 from app.repositories import documents as repo
 from app.repositories.models import (
     Approval,
     Document,
+    Job,
     Event,
     Extraction,
     ValidationResult,
@@ -29,6 +33,7 @@ from app.services.approval import approve_extraction
 from app.services.crm_write import write_approved_record
 from app.services.extraction import extract_document
 from app.services.validation import validate_extraction
+from app.workflows import queue
 
 router = APIRouter()
 
@@ -100,6 +105,37 @@ def write(
     )
 
 
+@router.post(
+    "/documents/{document_id}/jobs",
+    response_model=JobView,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def enqueue_job(
+    document_id: str, body: JobCreate, session: Session = Depends(get_session)
+) -> JobView:
+    _require(session, document_id)
+    try:
+        job_type = JobType(body.type)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422, detail=f"unknown job type {body.type}"
+        ) from exc
+    return _job_view(queue.enqueue(session, type=job_type, document_id=document_id))
+
+
+@router.get("/jobs/review", response_model=list[JobView])
+def review_queue(session: Session = Depends(get_session)) -> list[JobView]:
+    return [_job_view(job) for job in queue.review_queue(session)]
+
+
+@router.get("/jobs/{job_id}", response_model=JobView)
+def read_job(job_id: str, session: Session = Depends(get_session)) -> JobView:
+    job = session.get(Job, job_id)
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="job not found")
+    return _job_view(job)
+
+
 @router.get("/documents/{document_id}", response_model=DocumentDetail)
 def read_document(
     document_id: str, session: Session = Depends(get_session)
@@ -141,6 +177,20 @@ def _extraction_view(session: Session, extraction: Extraction) -> ExtractionView
         error_detail=extraction.error_detail,
         model=extraction.model,
         latency_ms=extraction.latency_ms,
+    )
+
+
+def _job_view(job: Job) -> JobView:
+    return JobView(
+        id=job.id,
+        type=job.type,
+        document_id=job.document_id,
+        status=job.status,
+        attempts=job.attempts,
+        max_attempts=job.max_attempts,
+        run_at=job.run_at.isoformat(),
+        failure_kind=job.failure_kind,
+        last_error=job.last_error,
     )
 
 

@@ -69,6 +69,22 @@ class WriteView(BaseModel):
     called_destination: bool
 
 
+class JobCreate(BaseModel):
+    type: str
+
+
+class JobView(BaseModel):
+    id: str
+    type: str
+    document_id: str
+    status: str
+    attempts: int
+    max_attempts: int
+    run_at: str
+    failure_kind: str | None = None
+    last_error: str | None = None
+
+
 class DocumentDetail(DocumentSummary):
     source_text: str
     extraction: ExtractionView | None = None

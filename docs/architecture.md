@@ -163,3 +163,44 @@ of settled work is not a new action and must not become an error.
 A failed destination call leaves the `crm_write` row in `failed` with its attempt
 count, and the document still `approved`. Retrying is safe because the key has
 not changed and the destination dedupes.
+
+## Durable workflow state
+
+Extraction and destination writes run as rows in a `job` table. There is no
+broker and no second service: a claim is a guarded `UPDATE`, and a lease is a
+timestamp.
+
+```
+claim:   UPDATE job SET status='running', locked_by=?, lease_expires_at=?,
+                        attempts = attempts + 1
+          WHERE id = ? AND status IN ('pending','running')
+            AND (lease_expires_at IS NULL OR lease_expires_at <= now)
+```
+
+Candidate rows are selected with `FOR UPDATE SKIP LOCKED` where the dialect
+supports it, but that is an optimisation. Correctness comes from the guarded
+update: two workers may select the same row, and only one will see `rowcount 1`.
+
+A worker runs three separate transactions per job: claim, dispatch, settle. That
+separation is the point. If claim and dispatch shared a transaction, a rollback
+on failure would also roll back the attempt counter and — worse — discard the
+extraction row and events the services had just recorded. `_dispatch` returns the
+failure rather than raising, so the audit rows commit and only then is the job
+marked failed.
+
+A crashed worker needs no operator action. Its lease expires, the next claim
+reclaims the row, and the attempt count increments because the work really was
+attempted. Recovery is safe only because the destination write is idempotent: a
+worker that died after calling the destination finds the record already there.
+
+Retry classification is by exception type, never by string matching. Transient
+errors (provider timeout, destination unavailable) retry with doubling backoff
+until `max_attempts`; everything else, including anything unrecognised, goes to
+the review queue on the first attempt. Exhausted retries and permanent failures
+are recorded distinctly, because they mean different things to whoever is on
+call.
+
+The web process can host the worker in a background thread
+(`EVIDENCEFLOW_RUN_WORKER=true`) or the worker can run separately. The job table
+is the source of truth either way, which is what makes a free single-process
+deployment behave identically to a two-service one.

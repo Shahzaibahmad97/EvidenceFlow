@@ -1,6 +1,6 @@
 # Evaluation v1 — deterministic validation
 
-Generated 2026-09-14 18:42 UTC from `evals/dataset.jsonl` via the `fake` provider.
+Generated 2026-09-14 19:05 UTC from `evals/dataset.jsonl` via the `fake` provider.
 Regenerate with `python evals/run.py`.
 
 ## Headline

@@ -9,6 +9,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
 from app.domain.events import DocumentStatus, EventType, ExtractionStatus, WriteStatus
+from app.domain.jobs import DEFAULT_MAX_ATTEMPTS, JobStatus
 
 
 def _uuid() -> str:
@@ -91,6 +92,26 @@ class CrmWrite(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Job(Base):
+    __tablename__ = "job"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    type: Mapped[str] = mapped_column(String(16))
+    document_id: Mapped[str] = mapped_column(ForeignKey("document.id"), index=True)
+    status: Mapped[str] = mapped_column(String(16), default=JobStatus.PENDING, index=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=DEFAULT_MAX_ATTEMPTS)
+    run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    locked_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    failure_kind: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
 class ValidationResult(Base):
