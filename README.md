@@ -126,6 +126,6 @@ tests/
 evals/
   dataset.jsonl  hand-written ground truth and expected routing
   run.py         replays the dataset and regenerates report.md
-docs/            plan, architecture
+docs/            plan, architecture, deployment
 scripts/demo.py  runnable vertical slice
 ```
