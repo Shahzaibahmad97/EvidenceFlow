@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "HM-4408",
+    "quote": "Invoice Number: HM-4408"
+  },
+  "supplier": {
+    "value": "Havenport Marine Supply",
+    "quote": "Havenport Marine Supply"
+  },
+  "currency": {
+    "value": "USD",
+    "quote": "Currency: USD"
+  },
+  "issue_date": {
+    "value": "2026-03-11",
+    "quote": "Issue Date: 2026-03-11"
+  },
+  "line_items": [
+    {
+      "description": "Mooring rope, 20m",
+      "quantity": "3",
+      "unit_price": "84.00",
+      "amount": "252.00"
+    },
+    {
+      "description": "Cleat, stainless",
+      "quantity": "4",
+      "unit_price": "19.50",
+      "amount": "78.00"
+    }
+  ],
+  "subtotal": {
+    "value": "330.00",
+    "quote": "Subtotal                                       \u20ac330.00"
+  },
+  "tax": {
+    "value": "66.00",
+    "quote": "VAT                                             \u20ac66.00"
+  },
+  "total": {
+    "value": "396.00",
+    "quote": "Total                                          \u20ac396.00"
+  }
+}

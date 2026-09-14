@@ -35,8 +35,11 @@ def test_upload_extract_and_read_back(client, fixtures):
     assert extraction["draft"]["total"]["value"] == "507.60"
     assert len(extraction["evidence"]) == 7
 
+    assert extraction["accepted"] is True
+    assert {row["outcome"] for row in extraction["validation"]} == {"pass"}
+
     document = client.get(f"/documents/{document_id}").json()
-    assert document["status"] == DocumentStatus.EXTRACTED
+    assert document["status"] == DocumentStatus.VALIDATED
     assert document["extraction"]["payload_hash"] == extraction["payload_hash"]
     assert [event["type"] for event in document["events"]][0] == "extraction_requested"
 

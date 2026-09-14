@@ -41,9 +41,6 @@ def _to_date(v: object) -> object:
     return v
 
 
-# Money and dates travel as strings so the provider JSON schema stays within the
-# keyword set strict structured outputs accepts, and so no amount passes through
-# a float.
 Money = Annotated[
     Decimal,
     BeforeValidator(_to_decimal),
@@ -62,8 +59,6 @@ CurrencyCode = Annotated[str, Field(pattern=r"^[A-Z]{3}$")]
 
 
 class EvidencedField(BaseModel, Generic[T]):
-    """A proposed value plus the verbatim source text the model claims supports it."""
-
     value: T
     quote: str = Field(min_length=1)
 

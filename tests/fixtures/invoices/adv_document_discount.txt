@@ -1,0 +1,13 @@
+Aldgate Signage Co.
+Invoice Number: AS-0154
+Issue Date: 2026-03-02
+Currency: GBP
+
+Shopfront sign, acrylic       1     980.00      980.00
+Installation                  1     220.00      220.00
+
+Gross                                          1200.00
+Less settlement discount 5%                     -60.00
+Subtotal                                       1140.00
+VAT 20%                                         228.00
+Total                                          1368.00

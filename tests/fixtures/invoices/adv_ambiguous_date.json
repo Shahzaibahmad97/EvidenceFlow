@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "SI-7741",
+    "quote": "Invoice Number: SI-7741"
+  },
+  "supplier": {
+    "value": "Sable Interiors Ltd",
+    "quote": "Sable Interiors Ltd"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-04-03",
+    "quote": "Invoice Date: 03/04/2026"
+  },
+  "line_items": [
+    {
+      "description": "Curtain rail, 2.4m",
+      "quantity": "4",
+      "unit_price": "31.25",
+      "amount": "125.00"
+    },
+    {
+      "description": "Fitting service",
+      "quantity": "1",
+      "unit_price": "75.00",
+      "amount": "75.00"
+    }
+  ],
+  "subtotal": {
+    "value": "200.00",
+    "quote": "Subtotal                                        200.00"
+  },
+  "tax": {
+    "value": "40.00",
+    "quote": "VAT                                              40.00"
+  },
+  "total": {
+    "value": "240.00",
+    "quote": "Total                                           240.00"
+  }
+}

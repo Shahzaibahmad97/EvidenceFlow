@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "WW-6120",
+    "quote": "Invoice Number: WW-6120"
+  },
+  "supplier": {
+    "value": "Wellspring Water Services",
+    "quote": "Wellspring Water Services"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-02-28",
+    "quote": "Issue Date: 2026-02-28"
+  },
+  "line_items": [
+    {
+      "description": "Cooler rental, quarterly",
+      "quantity": "3",
+      "unit_price": "45.00",
+      "amount": "135.00"
+    },
+    {
+      "description": "Bottled refill, 19L",
+      "quantity": "10",
+      "unit_price": "12.00",
+      "amount": "120.00"
+    }
+  ],
+  "subtotal": {
+    "value": "255.00",
+    "quote": "Subtotal                                        255.00"
+  },
+  "tax": {
+    "value": "51.00",
+    "quote": "VAT 20%                                          51.00"
+  },
+  "total": {
+    "value": "366.00",
+    "quote": "Total                                           366.00"
+  }
+}

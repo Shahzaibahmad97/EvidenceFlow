@@ -50,14 +50,14 @@ def test_every_accepted_field_carries_a_resolved_span(session, fixtures):
         assert source[item["start"] : item["end"]].split() == item["quote"].split()
 
 
-def test_unverifiable_evidence_routes_to_review(session, fixtures):
+def test_unverifiable_evidence_is_recorded_without_a_span(session, fixtures):
     name = "fail_unverifiable_quote"
     document = _document(session, fixtures, name)
 
     outcome = extract_document(session, document, fixtures.provider(name))
 
     assert outcome.succeeded
-    assert document.status == DocumentStatus.NEEDS_REVIEW
+    assert document.status == DocumentStatus.EXTRACTED
     assert EventType.EVIDENCE_REJECTED in _event_types(session, document.id)
     rejected = [item for item in outcome.extraction.evidence if not item["verified"]]
     assert [item["field"] for item in rejected] == ["subtotal"]

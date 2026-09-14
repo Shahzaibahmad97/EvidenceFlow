@@ -1,0 +1,38 @@
+{
+  "invoice_number": {
+    "value": "LP-5521",
+    "quote": "Invoice Number: LP-5521"
+  },
+  "supplier": {
+    "value": "Loxley Paper Mill",
+    "quote": "Loxley Paper Mill"
+  },
+  "currency": {
+    "value": "EUR",
+    "quote": "Currency: EUR"
+  },
+  "issue_date": {
+    "value": "2026-02-23",
+    "quote": "Issue Date: 2026-02-23"
+  },
+  "line_items": [
+    {
+      "description": "Recycled stock, 80gsm ream",
+      "quantity": "37",
+      "unit_price": "11.15",
+      "amount": "412.55"
+    }
+  ],
+  "subtotal": {
+    "value": "412.55",
+    "quote": "Subtotal                                        412.55"
+  },
+  "tax": {
+    "value": "78.38",
+    "quote": "VAT 19%                                          78.38"
+  },
+  "total": {
+    "value": "490.94",
+    "quote": "Total                                           490.94"
+  }
+}

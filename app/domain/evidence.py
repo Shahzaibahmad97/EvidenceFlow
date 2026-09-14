@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Any
 
 from app.domain.schema import InvoiceDraft
 
@@ -25,9 +27,28 @@ class EvidenceResult:
     def verified(self) -> bool:
         return self.span is not None
 
+    def to_row(self) -> dict[str, object]:
+        return {
+            "field": self.field,
+            "quote": self.quote,
+            "verified": self.verified,
+            "start": self.span.start if self.span else None,
+            "end": self.span.end if self.span else None,
+            "line": self.span.line if self.span else None,
+        }
 
-def _normalize(text: str) -> tuple[str, list[int]]:
-    """Collapse whitespace runs, keeping a map from normalized index to source index."""
+    @classmethod
+    def from_row(cls, row: Mapping[str, Any]) -> "EvidenceResult":
+        span = (
+            Span(start=row["start"], end=row["end"], line=row["line"])
+            if row.get("start") is not None
+            else None
+        )
+        return cls(field=row["field"], quote=row["quote"], span=span)
+
+
+def _collapse_whitespace(text: str) -> tuple[str, list[int]]:
+    """Returns the collapsed text and, per collapsed index, its index in the original."""
     chars: list[str] = []
     offsets: list[int] = []
     in_run = False
@@ -45,11 +66,10 @@ def _normalize(text: str) -> tuple[str, list[int]]:
 
 
 def find_span(source: str, quote: str) -> Span | None:
-    """Locate a verbatim quote in the source. Whitespace-insensitive, never fuzzy."""
     normalized_quote = _WHITESPACE.sub(" ", quote).strip()
     if not normalized_quote:
         return None
-    normalized_source, offsets = _normalize(source)
+    normalized_source, offsets = _collapse_whitespace(source)
     index = normalized_source.find(normalized_quote)
     if index == -1:
         return None

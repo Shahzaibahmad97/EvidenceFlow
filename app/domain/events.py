@@ -20,6 +20,7 @@ class EventType(StrEnum):
 class DocumentStatus(StrEnum):
     RECEIVED = "received"
     EXTRACTED = "extracted"
+    VALIDATED = "validated"
     EXTRACTION_FAILED = "extraction_failed"
     NEEDS_REVIEW = "needs_review"
 

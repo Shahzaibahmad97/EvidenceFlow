@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.domain.events import EventType
-from app.repositories.models import Document, Event, Extraction
+from app.domain.validation import RuleResult, normalize_supplier
+from app.repositories.models import Document, Event, Extraction, ValidationResult
 
 
 def create_document(session: Session, *, filename: str, source_text: str) -> Document:
@@ -58,3 +60,47 @@ def append_event(
     session.add(event)
     session.flush()
     return event
+
+
+def known_invoice_numbers(session: Session, *, exclude_document_id: str) -> frozenset[tuple[str, str]]:
+    """Supplier/number pairs already extracted from other documents."""
+    stmt = (
+        select(Extraction.draft)
+        .where(
+            Extraction.document_id != exclude_document_id,
+            Extraction.draft.is_not(None),
+        )
+    )
+    pairs = set()
+    for draft in session.scalars(stmt):
+        supplier = draft.get("supplier", {}).get("value", "")
+        number = draft.get("invoice_number", {}).get("value", "")
+        if supplier and number:
+            pairs.add((normalize_supplier(supplier), number.strip()))
+    return frozenset(pairs)
+
+
+def record_validation(
+    session: Session, *, extraction_id: str, results: Iterable[RuleResult]
+) -> list[ValidationResult]:
+    rows = [
+        ValidationResult(
+            extraction_id=extraction_id,
+            rule=result.rule,
+            outcome=result.outcome.value,
+            message=result.message,
+        )
+        for result in results
+    ]
+    session.add_all(rows)
+    session.flush()
+    return rows
+
+
+def list_validation_results(session: Session, extraction_id: str) -> list[ValidationResult]:
+    stmt = (
+        select(ValidationResult)
+        .where(ValidationResult.extraction_id == extraction_id)
+        .order_by(ValidationResult.created_at, ValidationResult.id)
+    )
+    return list(session.scalars(stmt))

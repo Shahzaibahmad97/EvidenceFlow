@@ -1,0 +1,38 @@
+{
+  "invoice_number": {
+    "value": "ZP-2026-018",
+    "quote": "Invoice Number: ZP-2026-018"
+  },
+  "supplier": {
+    "value": "Zurich Precision Instruments",
+    "quote": "Zurich Precision Instruments"
+  },
+  "currency": {
+    "value": "CHF",
+    "quote": "Currency: CHF"
+  },
+  "issue_date": {
+    "value": "2026-03-16",
+    "quote": "Issue Date: 2026-03-16"
+  },
+  "line_items": [
+    {
+      "description": "Calibration service",
+      "quantity": "1",
+      "unit_price": "640.00",
+      "amount": "640.00"
+    }
+  ],
+  "subtotal": {
+    "value": "640.00",
+    "quote": "Subtotal                                        640.00"
+  },
+  "tax": {
+    "value": "51.84",
+    "quote": "VAT 8.1%                                         51.84"
+  },
+  "total": {
+    "value": "691.84",
+    "quote": "Total                                           691.84"
+  }
+}

@@ -65,9 +65,18 @@ class Extraction(Base):
         return self.status == ExtractionStatus.SUCCEEDED
 
 
-class Event(Base):
-    """Append-only. Rows are never updated or deleted."""
+class ValidationResult(Base):
+    __tablename__ = "validation_result"
 
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    extraction_id: Mapped[str] = mapped_column(ForeignKey("extraction.id"), index=True)
+    rule: Mapped[str] = mapped_column(String(64))
+    outcome: Mapped[str] = mapped_column(String(16))
+    message: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Event(Base):
     __tablename__ = "event"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
