@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from app.domain.schema import InvoiceDraft
+from app.domain.schema import EvidencedField, InvoiceDraft
 
 _WHITESPACE = re.compile(r"\s+")
 
@@ -22,6 +22,7 @@ class EvidenceResult:
     field: str
     quote: str
     span: Span | None
+    derived_from_value: bool = False
 
     @property
     def verified(self) -> bool:
@@ -35,6 +36,7 @@ class EvidenceResult:
             "start": self.span.start if self.span else None,
             "end": self.span.end if self.span else None,
             "line": self.span.line if self.span else None,
+            "derived_from_value": self.derived_from_value,
         }
 
     @classmethod
@@ -44,7 +46,12 @@ class EvidenceResult:
             if row.get("start") is not None
             else None
         )
-        return cls(field=row["field"], quote=row["quote"], span=span)
+        return cls(
+            field=row["field"],
+            quote=row["quote"],
+            span=span,
+            derived_from_value=bool(row.get("derived_from_value")),
+        )
 
 
 def _collapse_whitespace(text: str) -> tuple[str, list[int]]:
@@ -78,8 +85,25 @@ def find_span(source: str, quote: str) -> Span | None:
     return Span(start=start, end=end, line=source.count("\n", 0, start) + 1)
 
 
-def verify_draft(draft: InvoiceDraft, source: str) -> list[EvidenceResult]:
+def verify_draft(
+    draft: InvoiceDraft, source: str, *, allow_value_fallback: bool = False
+) -> list[EvidenceResult]:
     return [
-        EvidenceResult(field=name, quote=field.quote, span=find_span(source, field.quote))
+        _resolve(name, field, source, allow_value_fallback)
         for name, field in draft.evidenced_fields().items()
     ]
+
+
+def _resolve(
+    name: str, field: EvidencedField, source: str, allow_value_fallback: bool
+) -> EvidenceResult:
+    span = find_span(source, field.quote)
+    if span is not None or not allow_value_fallback:
+        return EvidenceResult(field=name, quote=field.quote, span=span)
+    fallback = find_span(source, str(field.value))
+    return EvidenceResult(
+        field=name,
+        quote=field.quote,
+        span=fallback,
+        derived_from_value=fallback is not None,
+    )

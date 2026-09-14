@@ -14,7 +14,8 @@ from app.providers.fake import FakeProvider
 from app.repositories.session import build_session_factory
 from app.workflows.worker import Worker, run_in_background
 
-FIXTURE_DIR = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "invoices"
+FIXTURES = Path(__file__).resolve().parents[2] / "tests" / "fixtures"
+FIXTURE_DIRS = (FIXTURES / "invoices", FIXTURES / "held_out")
 
 
 def build_provider(settings: Settings) -> ExtractionProvider:
@@ -26,7 +27,7 @@ def build_provider(settings: Settings) -> ExtractionProvider:
         return OpenAIProvider(
             OpenAI(), settings.openai_model, timeout_seconds=settings.request_timeout_seconds
         )
-    return FakeProvider.from_fixtures(FIXTURE_DIR)
+    return FakeProvider.from_fixtures(*FIXTURE_DIRS)
 
 
 def create_app(

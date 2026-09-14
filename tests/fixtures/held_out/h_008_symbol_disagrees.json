@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "LG-2026-66",
+    "quote": "Invoice Number: LG-2026-66"
+  },
+  "supplier": {
+    "value": "Lyndhurst Garden Centre",
+    "quote": "Lyndhurst Garden Centre"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-04-27",
+    "quote": "Issue Date: 2026-04-27"
+  },
+  "line_items": [
+    {
+      "description": "Topsoil, bulk bag",
+      "quantity": "6",
+      "unit_price": "38.00",
+      "amount": "228.00"
+    },
+    {
+      "description": "Bark mulch, bulk bag",
+      "quantity": "3",
+      "unit_price": "41.00",
+      "amount": "123.00"
+    }
+  ],
+  "subtotal": {
+    "value": "351.00",
+    "quote": "Subtotal                                         \u20ac351.00"
+  },
+  "tax": {
+    "value": "70.20",
+    "quote": "VAT 20%                                           \u20ac70.20"
+  },
+  "total": {
+    "value": "421.20",
+    "quote": "Total                                            \u20ac421.20"
+  }
+}

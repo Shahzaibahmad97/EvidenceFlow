@@ -1,0 +1,11 @@
+Kingsmoor Data Systems
+Invoice Number: KD-2026-014
+Issue Date: 2026-02-11
+Currency: USD
+
+Server chassis, 2U               3   4,180.00   12,540.00
+Rail kit                         3     115.00      345.00
+
+Subtotal                                        12,885.00
+Sales tax 8.25%                                  1,063.01
+Total                                           13,948.01

@@ -1,0 +1,44 @@
+{
+  "invoice_number": {
+    "value": "PC-0881",
+    "quote": "Invoice Number: PC-0881"
+  },
+  "supplier": {
+    "value": "Padstow Coffee Roasters",
+    "quote": "Padstow Coffee Roasters"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-04-02",
+    "quote": "Issue Date: 2026-04-02"
+  },
+  "line_items": [
+    {
+      "description": "Espresso beans, 1kg",
+      "quantity": "8",
+      "unit_price": "22.00",
+      "amount": "176.00"
+    },
+    {
+      "description": "Sample pack (promotional)",
+      "quantity": "1",
+      "unit_price": "0.00",
+      "amount": "0.00"
+    }
+  ],
+  "subtotal": {
+    "value": "176.00",
+    "quote": "Subtotal                                          176.00"
+  },
+  "tax": {
+    "value": "35.20",
+    "quote": "VAT 20%                                            35.20"
+  },
+  "total": {
+    "value": "211.20",
+    "quote": "Total                                             211.20"
+  }
+}

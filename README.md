@@ -16,12 +16,12 @@ Synthetic data only. No real client documents are in this repository.
 
 ## Status
 
-Weeks 1-4 of six are complete: the typed extraction contract, verified evidence,
+Weeks 1-5 of six are complete: the typed extraction contract, verified evidence,
 the append-only event log, the provider boundary, deterministic business
-validation, a 20-document evaluation with hand-written ground truth, a
-version-bound approval gate with an idempotent destination write, and a durable
-job queue that survives worker interruption. The causal evaluation and the
-buyer-facing release follow. See [docs/PLAN.md](docs/PLAN.md),
+validation, a version-bound approval gate with an idempotent destination write,
+a durable job queue that survives worker interruption, and a 30-document
+evaluation with ten held-out cases, causal error labels and cost per accepted
+outcome. The buyer-facing release follows. See [docs/PLAN.md](docs/PLAN.md),
 [evals/report.md](evals/report.md) and [docs/runbook.md](docs/runbook.md).
 
 ## Quickstart
@@ -29,11 +29,11 @@ buyer-facing release follow. See [docs/PLAN.md](docs/PLAN.md),
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                        # 127 tests, no API key required
+pytest                        # 151 tests, no API key required
 python scripts/demo.py        # extracts the five sample invoices, prints the evidence
 python scripts/demo_approval.py  # approval, idempotent write, twenty replays
 python scripts/demo_recovery.py  # 503, worker death mid-write, recovery, one record
-python evals/run.py           # replays the 20-document dataset, regenerates the report
+python evals/run.py           # replays all 30 documents, regenerates the report
 ```
 
 Every deterministic test runs against a fake provider. A real provider call is
@@ -84,18 +84,30 @@ position the model asserted. See [docs/architecture.md](docs/architecture.md).
 
 ## Evaluation
 
-Twenty synthetic documents, fifteen of them deliberately hard: a date that is
-day-first or month-first, a settlement discount below the line items, per-line
-VAT columns, one minor unit of rounding drift, totals split across a page break,
-a euro sign under a USD header, a redelivered invoice number, a credit note, and
-a document whose printed total does not add up.
+Thirty synthetic documents — twenty for development, ten held out and never used
+to tune a rule, a threshold or the prompt. Twenty-four are deliberately hard: a
+date that is day-first or month-first, a settlement discount below the line
+items, per-line VAT columns, one minor unit of rounding drift, totals split
+across a page break, a euro sign under a USD header, a prior balance printed
+below the total, a redelivered invoice number, a credit note, and a document
+whose printed total does not add up.
 
-Ground truth is hand-written. Three fields are recorded as having no correct
+Ground truth is hand-written. Five fields are recorded as having no correct
 answer at all, because the document contradicts itself — those are review work by
 definition, not extraction errors.
 
-Twelve of the twenty produce output the schema accepts and ordinary code refuses.
-Valid JSON is not a valid business outcome.
+Seventeen of the thirty produce output the schema accepts and ordinary code
+refuses. Valid JSON is not a valid business outcome.
+
+Each blocked document is labelled by its **earliest causal error** — `selection`,
+`completeness`, `truthfulness` or `postcondition` — so the root cause is counted
+once rather than the damage downstream of it. Twelve are postcondition failures:
+the model was right and the answer was still no.
+
+Cost per accepted outcome includes reviewer time, not tokens alone. At the stated
+assumptions reviewer time is 99% of it, which is the point of measuring it.
+
+See [evals/report.md](evals/report.md).
 
 ## Approval and replay protection
 

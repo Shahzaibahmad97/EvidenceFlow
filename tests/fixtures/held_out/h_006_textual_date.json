@@ -1,0 +1,38 @@
+{
+  "invoice_number": {
+    "value": "BP-5520",
+    "quote": "Invoice Number: BP-5520"
+  },
+  "supplier": {
+    "value": "Bellhaven Print Room",
+    "quote": "Bellhaven Print Room"
+  },
+  "currency": {
+    "value": "GBP",
+    "quote": "Currency: GBP"
+  },
+  "issue_date": {
+    "value": "2026-03-07",
+    "quote": "Issued 7 March 2026"
+  },
+  "line_items": [
+    {
+      "description": "Exhibition panels, foamex",
+      "quantity": "9",
+      "unit_price": "46.00",
+      "amount": "414.00"
+    }
+  ],
+  "subtotal": {
+    "value": "414.00",
+    "quote": "Subtotal                                          414.00"
+  },
+  "tax": {
+    "value": "82.80",
+    "quote": "VAT 20%                                            82.80"
+  },
+  "total": {
+    "value": "496.80",
+    "quote": "Total                                             496.80"
+  }
+}
