@@ -285,3 +285,24 @@ def _key(session, document_id: str) -> str:
 
     document = repo.get_document(session, document_id)
     return idempotency_key(document_id, document.approved_payload_hash)
+
+
+def test_the_loop_survives_a_failure_outside_a_job(file_session_factory, fixtures, crm):
+    import threading
+
+    worker = build_worker(file_session_factory, fixtures, crm)
+    attempts = []
+
+    def explode_once():
+        attempts.append(1)
+        if len(attempts) == 1:
+            raise RuntimeError("database went away")
+        stop.set()
+        return None
+
+    worker.run_once = explode_once
+    stop = threading.Event()
+
+    worker.run_forever(stop, idle_sleep=0.01)
+
+    assert len(attempts) == 2

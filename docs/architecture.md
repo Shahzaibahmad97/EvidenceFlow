@@ -238,3 +238,39 @@ taxonomy cannot drift quietly.
 `--split held_out` runs only the ten documents held back. They were written after
 the rules were fixed, and no rule, threshold or prompt was changed after seeing
 their results.
+
+## The review screen
+
+`/review` is server-rendered HTML with no frontend framework and no client-side
+state. It reads what the API already exposes and renders it: the source with
+verified evidence spans highlighted, the proposed fields, every validation result,
+and the event trail.
+
+Highlighting is computed by `app/api/highlight.py`, a pure function that turns the
+source and the stored spans into segments. Overlapping spans are skipped rather
+than nested, and the segments always reassemble into exactly the original source —
+a property the tests assert, because a review screen that silently drops or
+duplicates document text is worse than no screen at all.
+
+The screen is a view, never a source of truth. The approve form carries the
+payload hash it was rendered with, and the server compares it against the current
+extraction before approving. A tab left open while the document was re-extracted
+cannot approve a version nobody read. That check sits in front of the same
+`approve_extraction` service the API uses; the screen gets no privileged path.
+
+## Deployment shape
+
+`docker compose up` runs three services: Postgres, the API, and a worker process.
+`EVIDENCEFLOW_RUN_WORKER=true` instead hosts the worker inside the web process,
+which is what a single-process free tier needs. The job table is the source of
+truth either way.
+
+One honest limitation: the mock destination lives in memory, so the API and worker
+containers hold separate copies. Its deduplication proves the contract within a
+process; across processes the `UNIQUE` constraint on `crm_write.idempotency_key`
+is what holds the line. A real destination would deduplicate server-side.
+
+Mutating requests pass through `RequestLimits`: bodies over 256 KB are refused,
+and a sliding window caps write traffic per client. Reads are never limited. This
+exists because the endpoints are unauthenticated by design in the demo, and an
+unauthenticated public endpoint without limits is an invitation.

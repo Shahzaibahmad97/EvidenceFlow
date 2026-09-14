@@ -22,6 +22,8 @@ def settings() -> Settings:
         openai_model="unused",
         request_timeout_seconds=1.0,
         run_worker=False,
+        seed_on_start=False,
+        fixture_dir=Path(__file__).parent / "fixtures",
     )
 
 
