@@ -16,20 +16,22 @@ Synthetic data only. No real client documents are in this repository.
 
 ## Status
 
-Weeks 1-2 of six are complete: the typed extraction contract, verified evidence,
+Weeks 1-3 of six are complete: the typed extraction contract, verified evidence,
 the append-only event log, the provider boundary, deterministic business
-validation, and a 20-document evaluation with hand-written ground truth.
-Approval, the idempotent write, durable recovery, and the causal evaluation
-follow. See [docs/PLAN.md](docs/PLAN.md) and [evals/report.md](evals/report.md).
+validation, a 20-document evaluation with hand-written ground truth, and a
+version-bound approval gate with an idempotent destination write. Durable
+recovery and the causal evaluation follow. See [docs/PLAN.md](docs/PLAN.md) and
+[evals/report.md](evals/report.md).
 
 ## Quickstart
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                    # 71 tests, no API key required
-python scripts/demo.py    # extracts the five sample invoices, prints the evidence
-python evals/run.py       # replays the 20-document dataset, regenerates the report
+pytest                        # 98 tests, no API key required
+python scripts/demo.py        # extracts the five sample invoices, prints the evidence
+python scripts/demo_approval.py  # approval, idempotent write, twenty replays
+python evals/run.py           # replays the 20-document dataset, regenerates the report
 ```
 
 Every deterministic test runs against a fake provider. A real provider call is
@@ -55,7 +57,9 @@ uvicorn app.api.app:create_app --factory --reload
 |--------|---------------------------------|---------------------------------------------|
 | POST   | `/documents`                    | store an invoice's text                     |
 | POST   | `/documents/{id}/extract`       | extract, then validate                      |
-| GET    | `/documents/{id}`               | draft, evidence, validation, event trail    |
+| POST   | `/documents/{id}/approve`       | approve the current version (`X-Actor`)     |
+| POST   | `/documents/{id}/write`         | write to the mock CRM, once per version     |
+| GET    | `/documents/{id}`               | draft, evidence, validation, approval, events |
 | GET    | `/health`                       | liveness                                    |
 
 ## Sample output
@@ -88,6 +92,24 @@ definition, not extraction errors.
 Twelve of the twenty produce output the schema accepts and ordinary code refuses.
 Valid JSON is not a valid business outcome.
 
+## Approval and replay protection
+
+```
+$ python scripts/demo_approval.py
+1. extracted and validated -> validated
+   payload_hash 0c05e7b4e66e82c3
+2. approved by reviewer@example.com -> approved
+   idempotency key affce170c7673d5b
+3. wrote CRM-00001 -> written
+4. twenty replays -> 1 destination call(s), 1 record(s)
+5. corrected document, write refused -> approval_missing
+```
+
+The idempotency key is derived on the server from the document id and the
+approved payload hash. `crm_write.idempotency_key` is `UNIQUE`, the mock
+destination deduplicates on the same key, and the document transition to
+`written` is one guarded `UPDATE`. Eight concurrent writers produce one record.
+
 ## Layout
 
 ```
@@ -104,6 +126,6 @@ tests/
 evals/
   dataset.jsonl  hand-written ground truth and expected routing
   run.py         replays the dataset and regenerates report.md
-docs/            plan, architecture
+docs/            plan, architecture, deployment
 scripts/demo.py  runnable vertical slice
 ```

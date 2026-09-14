@@ -4,11 +4,11 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
-from app.domain.events import DocumentStatus, EventType, ExtractionStatus
+from app.domain.events import DocumentStatus, EventType, ExtractionStatus, WriteStatus
 
 
 def _uuid() -> str:
@@ -30,6 +30,7 @@ class Document(Base):
     filename: Mapped[str] = mapped_column(String(255))
     source_text: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(32), default=DocumentStatus.RECEIVED)
+    approved_payload_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     extractions: Mapped[list["Extraction"]] = relationship(
@@ -63,6 +64,33 @@ class Extraction(Base):
     @property
     def succeeded(self) -> bool:
         return self.status == ExtractionStatus.SUCCEEDED
+
+
+class Approval(Base):
+    __tablename__ = "approval"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    document_id: Mapped[str] = mapped_column(ForeignKey("document.id"), index=True)
+    extraction_id: Mapped[str] = mapped_column(ForeignKey("extraction.id"))
+    payload_hash: Mapped[str] = mapped_column(String(64))
+    actor: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class CrmWrite(Base):
+    __tablename__ = "crm_write"
+    __table_args__ = (UniqueConstraint("idempotency_key", name="uq_crm_write_idempotency_key"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    document_id: Mapped[str] = mapped_column(ForeignKey("document.id"), index=True)
+    extraction_id: Mapped[str] = mapped_column(ForeignKey("extraction.id"))
+    idempotency_key: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(16), default=WriteStatus.PENDING)
+    external_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
 class ValidationResult(Base):

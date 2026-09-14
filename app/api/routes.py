@@ -3,18 +3,30 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_provider, get_session
+from app.api.dependencies import get_actor, get_crm, get_provider, get_session
 from app.api.schemas import (
+    ApprovalView,
     DocumentCreate,
     DocumentDetail,
     DocumentSummary,
     EventView,
     ExtractionView,
     ValidationView,
+    WriteView,
 )
+from app.domain.approval import ApprovalError, ApprovalMissing
 from app.providers.base import ExtractionProvider
+from app.providers.crm import CrmClient, CrmError
 from app.repositories import documents as repo
-from app.repositories.models import Document, Event, Extraction, ValidationResult
+from app.repositories.models import (
+    Approval,
+    Document,
+    Event,
+    Extraction,
+    ValidationResult,
+)
+from app.services.approval import approve_extraction
+from app.services.crm_write import write_approved_record
 from app.services.extraction import extract_document
 from app.services.validation import validate_extraction
 
@@ -47,6 +59,47 @@ def extract(
     return _extraction_view(session, outcome.extraction)
 
 
+@router.post("/documents/{document_id}/approve", response_model=ApprovalView)
+def approve(
+    document_id: str,
+    session: Session = Depends(get_session),
+    actor: str = Depends(get_actor),
+) -> ApprovalView:
+    document = _require(session, document_id)
+    extraction = repo.latest_extraction(session, document_id)
+    if extraction is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="nothing to approve")
+    try:
+        approval = approve_extraction(session, document, extraction, actor=actor)
+    except ApprovalError as exc:
+        raise _conflict(exc) from exc
+    return _approval_view(approval)
+
+
+@router.post("/documents/{document_id}/write", response_model=WriteView)
+def write(
+    document_id: str,
+    session: Session = Depends(get_session),
+    crm: CrmClient = Depends(get_crm),
+) -> WriteView:
+    document = _require(session, document_id)
+    try:
+        outcome = write_approved_record(session, document, crm)
+    except ApprovalError as exc:
+        raise _conflict(exc) from exc
+    except CrmError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail={"code": exc.code, "message": str(exc)}
+        ) from exc
+    return WriteView(
+        idempotency_key=outcome.write.idempotency_key,
+        status=outcome.write.status,
+        external_id=outcome.external_id,
+        attempts=outcome.write.attempts,
+        called_destination=outcome.called_destination,
+    )
+
+
 @router.get("/documents/{document_id}", response_model=DocumentDetail)
 def read_document(
     document_id: str, session: Session = Depends(get_session)
@@ -57,6 +110,7 @@ def read_document(
         **_summary(document).model_dump(),
         source_text=document.source_text,
         extraction=_extraction_view(session, extraction) if extraction else None,
+        approval=_approval_view(approval) if (approval := repo.latest_approval(session, document_id)) else None,
         events=[_event_view(event) for event in repo.list_events(session, document_id)],
     )
 
@@ -87,6 +141,25 @@ def _extraction_view(session: Session, extraction: Extraction) -> ExtractionView
         error_detail=extraction.error_detail,
         model=extraction.model,
         latency_ms=extraction.latency_ms,
+    )
+
+
+def _conflict(exc: ApprovalError) -> HTTPException:
+    code = (
+        status.HTTP_404_NOT_FOUND
+        if isinstance(exc, ApprovalMissing)
+        else status.HTTP_409_CONFLICT
+    )
+    return HTTPException(status_code=code, detail={"code": exc.code, "message": str(exc)})
+
+
+def _approval_view(approval: Approval) -> ApprovalView:
+    return ApprovalView(
+        id=approval.id,
+        extraction_id=approval.extraction_id,
+        payload_hash=approval.payload_hash,
+        actor=approval.actor,
+        expires_at=approval.expires_at.isoformat(),
     )
 
 

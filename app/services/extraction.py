@@ -77,6 +77,7 @@ def extract_document(
     _record_evidence_events(session, document, extraction, evidence)
 
     document.status = DocumentStatus.EXTRACTED
+    document.approved_payload_hash = None
     repo.append_event(
         session,
         document_id=document.id,

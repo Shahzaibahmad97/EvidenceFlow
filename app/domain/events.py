@@ -21,8 +21,16 @@ class DocumentStatus(StrEnum):
     RECEIVED = "received"
     EXTRACTED = "extracted"
     VALIDATED = "validated"
+    APPROVED = "approved"
+    WRITTEN = "written"
     EXTRACTION_FAILED = "extraction_failed"
     NEEDS_REVIEW = "needs_review"
+
+
+class WriteStatus(StrEnum):
+    PENDING = "pending"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
 
 
 class ExtractionStatus(StrEnum):
