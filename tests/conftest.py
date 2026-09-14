@@ -36,6 +36,15 @@ def session(session_factory) -> Session:
 
 
 @pytest.fixture
+def file_session_factory(tmp_path, settings):
+    from dataclasses import replace
+
+    return build_session_factory(
+        replace(settings, database_url=f"sqlite:///{tmp_path / 'evidenceflow.db'}")
+    )
+
+
+@pytest.fixture
 def fixtures() -> "Fixtures":
     return Fixtures(FIXTURE_DIR)
 

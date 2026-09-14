@@ -128,3 +128,38 @@ draft that could be true. A settlement discount printed below the line items
 yields a perfectly schema-valid draft whose lines sum to the wrong subtotal. A
 correctly extracted invoice in an unsupported currency is not a licence to write.
 A redelivered invoice with every field right is still a duplicate.
+
+## Approval and the write gate
+
+Approval binds to the extraction's `payload_hash`, not to a version counter. The
+document carries `approved_payload_hash`, and a new extraction clears it, so a
+correction invalidates a prior approval by construction rather than by a check
+somebody has to remember to write.
+
+`approve_extraction` refuses anything that is not currently `validated`, and
+refuses an extraction that is no longer the document's latest. The approving
+actor and an expiry are recorded on the approval row and in the event.
+
+The destination write is guarded four ways, and each guard is structural:
+
+1. **A server-derived key.** `idempotency_key(document_id, payload_hash)` is
+   length-prefixed before hashing, so no combination of ids can collide by
+   shifting the boundary between them. Clients never supply it.
+2. **A database constraint.** `crm_write.idempotency_key` is `UNIQUE`. Two racing
+   writers cannot both claim the same key, whatever the application does.
+3. **A deduplicating destination.** `MockCrm` keys its records the same way, so
+   even a duplicate call cannot produce a second record. Idempotency is proved
+   end to end, not only on our side.
+4. **A guarded transition.** The document moves to `written` with a single
+   `UPDATE ... WHERE id = ? AND status = 'approved' AND approved_payload_hash = ?`.
+   Zero rows affected means the document left the approved state while the write
+   was in flight, and the write is rejected. There is no read-then-write anywhere
+   in the path.
+
+Replays are ordered before expiry checks. A write that already succeeded returns
+the existing record as a no-op even if the approval has since expired — a retry
+of settled work is not a new action and must not become an error.
+
+A failed destination call leaves the `crm_write` row in `failed` with its attempt
+count, and the document still `approved`. Retrying is safe because the key has
+not changed and the destination dedupes.

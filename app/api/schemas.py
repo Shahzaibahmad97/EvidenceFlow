@@ -53,7 +53,24 @@ class EventView(BaseModel):
     created_at: str
 
 
+class ApprovalView(BaseModel):
+    id: str
+    extraction_id: str
+    payload_hash: str
+    actor: str
+    expires_at: str
+
+
+class WriteView(BaseModel):
+    idempotency_key: str
+    status: str
+    external_id: str | None = None
+    attempts: int
+    called_destination: bool
+
+
 class DocumentDetail(DocumentSummary):
     source_text: str
     extraction: ExtractionView | None = None
+    approval: ApprovalView | None = None
     events: list[EventView] = []

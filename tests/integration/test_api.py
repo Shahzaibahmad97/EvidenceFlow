@@ -61,3 +61,60 @@ def test_unknown_document_is_404(client):
 
 def test_empty_upload_is_rejected(client):
     assert client.post("/documents", json={"filename": "a.txt", "text": ""}).status_code == 422
+
+
+def _through_extraction(client, fixtures, name):
+    document_id = _upload(client, fixtures, name)
+    client.post(f"/documents/{document_id}/extract")
+    return document_id
+
+
+def test_approve_then_write_then_replay(client, fixtures):
+    document_id = _through_extraction(client, fixtures, "inv_002_northwind")
+
+    approval = client.post(
+        f"/documents/{document_id}/approve", headers={"X-Actor": "sam@example.com"}
+    )
+    assert approval.status_code == 200
+    assert approval.json()["actor"] == "sam@example.com"
+
+    first = client.post(f"/documents/{document_id}/write").json()
+    assert first["called_destination"] is True
+    assert first["external_id"]
+
+    replays = [client.post(f"/documents/{document_id}/write").json() for _ in range(5)]
+    assert all(replay["called_destination"] is False for replay in replays)
+    assert {replay["external_id"] for replay in replays} == {first["external_id"]}
+
+    document = client.get(f"/documents/{document_id}").json()
+    assert document["status"] == DocumentStatus.WRITTEN
+    assert document["approval"]["payload_hash"] == document["extraction"]["payload_hash"]
+
+
+def test_a_document_in_review_cannot_be_approved_over_http(client, fixtures):
+    document_id = _through_extraction(client, fixtures, "adv_ambiguous_date")
+
+    response = client.post(f"/documents/{document_id}/approve")
+
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == "not_ready_for_approval"
+
+
+def test_writing_without_approval_is_404(client, fixtures):
+    document_id = _through_extraction(client, fixtures, "inv_005_calder")
+
+    response = client.post(f"/documents/{document_id}/write")
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "approval_missing"
+
+
+def test_re_extraction_invalidates_an_approval(client, fixtures):
+    document_id = _through_extraction(client, fixtures, "inv_004_meridian")
+    client.post(f"/documents/{document_id}/approve")
+
+    client.post(f"/documents/{document_id}/extract")
+    response = client.post(f"/documents/{document_id}/write")
+
+    assert response.status_code == 404
+    assert client.get(f"/documents/{document_id}").json()["status"] == DocumentStatus.VALIDATED
