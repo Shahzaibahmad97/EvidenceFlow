@@ -111,3 +111,29 @@ def test_writes_are_rate_limited(settings, fixtures, tmp_path):
 def test_the_public_surface_answers(settings, fixtures, tmp_path, path):
     with build(settings, fixtures, tmp_path) as client:
         assert client.get(path).status_code == 200
+
+
+def test_seeded_ids_survive_a_reseed(settings, tmp_path):
+    def seed(name: str) -> list[str]:
+        factory = build_session_factory(
+            replace(settings, database_url=f"sqlite:///{tmp_path / name}")
+        )
+        seed_documents(factory, settings.fixture_dirs)
+        with session_scope(factory) as session:
+            return [document.id for document in repo.list_documents(session)]
+
+    assert seed("first.db") == seed("second.db")
+
+
+def test_a_link_to_a_seeded_document_survives_a_restart(settings, fixtures, tmp_path):
+    with build(settings, fixtures, tmp_path, seed_on_start=True) as client:
+        before = client.get("/documents").json()[0]
+
+    (tmp_path / "seed.db").unlink()
+
+    with build(settings, fixtures, tmp_path, seed_on_start=True) as client:
+        after = client.get("/documents").json()[0]
+        assert client.get(f"/review/{before['id']}").status_code == 200
+
+    assert before["id"] == after["id"]
+    assert before["filename"] == after["filename"]
