@@ -57,6 +57,15 @@ def test_seeding_queues_every_document_for_extraction(settings, tmp_path):
         assert session.query(Job).count() == 30
 
 
+def test_seeding_leaves_duplicate_pairs_for_approval_to_settle(settings, fixtures, tmp_path):
+    with build(settings, fixtures, tmp_path, seed_on_start=True, run_worker=True) as client:
+        assert wait_for(lambda: "received" not in client.get("/review").text, timeout=20.0)
+        rows = {row["filename"]: row["status"] for row in client.get("/documents").json()}
+
+    for pair in (("inv_001_acme.txt", "adv_duplicate_number.txt"), ("h_001_wren.txt", "h_010_redelivered.txt")):
+        assert {rows[name] for name in pair} == {"validated"}
+
+
 def test_a_seeded_app_with_a_worker_processes_everything(settings, fixtures, tmp_path):
     with build(settings, fixtures, tmp_path, seed_on_start=True, run_worker=True) as client:
         assert wait_for(
@@ -64,9 +73,9 @@ def test_a_seeded_app_with_a_worker_processes_everything(settings, fixtures, tmp
         )
         page = client.get("/review").text
 
-    assert page.count(">validated<") == 13
-    assert "needs review" in page
-    assert "extraction failed" in page
+    assert page.count(">validated<") == 15
+    assert page.count(">needs review<") == 13
+    assert page.count(">extraction failed<") == 2
 
 
 def test_the_app_does_not_seed_by_default(settings, fixtures, tmp_path):

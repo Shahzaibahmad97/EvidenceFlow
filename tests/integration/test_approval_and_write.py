@@ -193,6 +193,30 @@ def test_the_document_transition_is_guarded(session, fixtures, crm):
         write_approved_record(session, document, crm)
 
 
+def test_approval_revalidates_and_closes_the_window(session, fixtures, crm):
+    copy, copy_extraction = intake(session, fixtures, "adv_duplicate_number")
+    original, extraction = intake(session, fixtures)
+    assert copy.status == DocumentStatus.VALIDATED
+
+    approve_extraction(session, original, extraction, actor=ACTOR)
+    write_approved_record(session, original, crm)
+
+    with pytest.raises(NotReadyForApproval, match="invoice_number_not_duplicate"):
+        approve_extraction(session, copy, copy_extraction, actor=ACTOR)
+
+    assert copy.status == DocumentStatus.NEEDS_REVIEW
+    assert len(crm.records) == 1
+
+
+def test_an_uncommitted_copy_does_not_block_the_original(session, fixtures):
+    copy, _ = intake(session, fixtures, "adv_duplicate_number")
+    original, extraction = intake(session, fixtures)
+
+    assert copy.status == DocumentStatus.VALIDATED
+    assert original.status == DocumentStatus.VALIDATED
+    assert approve_extraction(session, original, extraction, actor=ACTOR).payload_hash
+
+
 def test_the_event_trail_records_the_whole_slice(session, fixtures, crm):
     document, extraction = intake(session, fixtures)
     approve_extraction(session, document, extraction, actor=ACTOR)
@@ -202,6 +226,7 @@ def test_the_event_trail_records_the_whole_slice(session, fixtures, crm):
         EventType.EXTRACTION_REQUESTED,
         EventType.EVIDENCE_VERIFIED,
         EventType.EXTRACTION_SUCCEEDED,
+        EventType.VALIDATION_COMPLETED,
         EventType.VALIDATION_COMPLETED,
         EventType.APPROVAL_GRANTED,
         EventType.WRITE_ATTEMPTED,

@@ -70,8 +70,8 @@ hash of the approved payload, and any new extraction clears it. A correction
 invalidates a prior approval by construction, not by a check somebody has to
 remember to write.
 
-**Idempotency is structural.** The key is derived on the server from the document
-id and the approved payload hash, length-prefixed before hashing so no pair of ids
+**Idempotency is structural, at both ends.** The key is derived on the server from
+the document id and the approved payload hash, length-prefixed before hashing so no pair of ids
 can collide by shifting the boundary between them. The key column is `UNIQUE`. The
 mock destination deduplicates on the same key, so replay safety holds end to end
 rather than only on our side. The document moves to `written` through one guarded
@@ -80,7 +80,7 @@ mid-flight. There is no read-then-write anywhere in the path.
 
 ## Failure tests
 
-180 tests, none of which need an API key. The ones that shaped the design:
+200 tests, none of which need an API key. The ones that shaped the design:
 
 - **Twenty replays of an approved write** produce one destination record and one
   destination call.
@@ -97,6 +97,9 @@ mid-flight. There is no read-then-write anywhere in the path.
   classified permanent and goes straight to the review queue on the first attempt.
 - **An unrecognised error is treated as permanent.** Retrying something nobody has
   reasoned about is how one failure becomes a storm.
+- **Two copies of one invoice** both validate on arrival, and the second is
+  refused the moment the first is written — caught by re-validating at approval,
+  and by a unique business key at the destination if it ever got that far.
 
 ## Measured results
 

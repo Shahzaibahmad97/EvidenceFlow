@@ -14,6 +14,7 @@ from app.domain.approval import (
 from app.domain.events import DocumentStatus, EventType
 from app.repositories import documents as repo
 from app.repositories.models import Approval, Document, Extraction
+from app.services.validation import validate_extraction
 
 
 def approve_extraction(
@@ -30,6 +31,13 @@ def approve_extraction(
     current = repo.latest_extraction(session, document.id)
     if current is None or current.id != extraction.id:
         raise ExtractionSupersededError("a newer extraction exists for this document")
+
+    blocking = [result for result in validate_extraction(session, document, extraction) if result.blocking]
+    if blocking:
+        document.status = DocumentStatus.NEEDS_REVIEW
+        raise NotReadyForApproval(
+            "; ".join(f"{result.rule}: {result.message}" for result in blocking)
+        )
 
     approval = repo.create_approval(
         session,

@@ -8,7 +8,7 @@ from app.domain.schema import InvoiceDraft
 from app.domain.validation import RuleResult, ValidationInput, is_accepted, validate
 from app.repositories import documents as repo
 from app.repositories.models import Document, Extraction
-from app.services.extraction import SYSTEM_ACTOR
+SYSTEM_ACTOR = "system"
 
 
 def validate_extraction(
@@ -20,7 +20,7 @@ def validate_extraction(
             draft=InvoiceDraft.model_validate(extraction.draft),
             source=document.source_text,
             evidence=[EvidenceResult.from_row(row) for row in extraction.evidence or []],
-            known_invoice_numbers=repo.known_invoice_numbers(
+            known_invoice_numbers=repo.committed_invoice_numbers(
                 session, exclude_document_id=document.id
             ),
         )

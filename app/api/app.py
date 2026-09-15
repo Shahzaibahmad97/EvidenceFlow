@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from app.api.limits import RequestLimits
+from app.api.limits import RequestLimits, SlidingWindow
 from app.api.review import router as review_router
 from app.api.routes import router
 from app.config import Settings
@@ -43,7 +43,11 @@ def create_app(
         provider=app.state.provider,
         crm=app.state.crm,
     )
-    app.add_middleware(RequestLimits)
+    app.add_middleware(
+        RequestLimits,
+        max_body_bytes=settings.max_body_bytes,
+        window=SlidingWindow(limit=settings.rate_limit_per_minute),
+    )
     app.include_router(router)
     app.include_router(review_router)
     return app

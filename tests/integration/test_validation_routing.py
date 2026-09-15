@@ -58,13 +58,28 @@ def test_validation_completed_event_names_the_blocking_rules(session, fixtures):
     assert "credit_note_consistent" in {item["rule"] for item in event.payload["blocking"]}
 
 
-def test_a_redelivered_invoice_number_is_blocked(session, fixtures):
-    _intake(session, fixtures, "inv_001_acme")
+def test_a_redelivered_invoice_number_is_blocked_once_the_first_is_committed(session, fixtures):
+    from app.providers.crm import MockCrm
+    from app.services.approval import approve_extraction
+    from app.services.crm_write import write_approved_record
+
+    first, extraction, _ = _intake(session, fixtures, "inv_001_acme")
+    approve_extraction(session, first, extraction, actor="reviewer@example.com")
+    write_approved_record(session, first, MockCrm())
 
     document, _, results = _intake(session, fixtures, "adv_duplicate_number")
 
     assert document.status == DocumentStatus.NEEDS_REVIEW
     assert "invoice_number_not_duplicate" in [r.rule for r in results if r.blocking]
+
+
+def test_an_uncommitted_document_does_not_claim_its_invoice_number(session, fixtures):
+    _intake(session, fixtures, "inv_001_acme")
+
+    document, _, results = _intake(session, fixtures, "adv_duplicate_number")
+
+    assert document.status == DocumentStatus.VALIDATED
+    assert [r.rule for r in results if r.blocking] == []
 
 
 def test_a_document_is_not_a_duplicate_of_itself(session, fixtures):

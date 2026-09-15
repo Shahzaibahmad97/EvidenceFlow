@@ -26,11 +26,12 @@ All six weeks are complete. Start with the
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                        # 180 tests, no API key required
+pytest                        # 200 tests, no API key required
 python scripts/demo.py        # extracts the five sample invoices, prints the evidence
 python scripts/demo_approval.py  # approval, idempotent write, twenty replays
 python scripts/demo_recovery.py  # 503, worker death mid-write, recovery, one record
 python evals/run.py           # replays all 30 documents, regenerates the report
+python scripts/e2e_live.py    # 61 checks against a running deployment
 ```
 
 Every deterministic test runs against a fake provider. A real provider call is

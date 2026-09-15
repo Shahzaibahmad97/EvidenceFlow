@@ -115,6 +115,11 @@ Each rule returns `pass`, `needs_review`, or `fail`:
 | `needs_review` | a person must decide | one minor unit of rounding drift, an ambiguous date, a currency symbol contradicting the code |
 | `fail` | the record cannot be correct | line items do not sum to the subtotal, unsupported currency, redelivered invoice number |
 
+A number counts as taken only once the document holding it is `approved` or
+`written`. An uncommitted copy claims nothing, so the mere arrival of a duplicate
+cannot block the original — which of the two arrived first is an accident of
+ordering, and the one that gets committed is a decision.
+
 Results are written to `validation_result`, never merged into the extraction
 payload. The model's proposal and our verdict on it stay separately readable, so
 a reviewer can see what was proposed and why it was refused.
@@ -122,6 +127,17 @@ a reviewer can see what was proposed and why it was refused.
 Routing is a single decision point in `app/services/validation.py`: all rules
 pass, or the document goes to `needs_review`. Extraction does not route — it
 records what happened and leaves the verdict to the rules.
+
+Validation runs twice: once at intake, and again inside `approve_extraction`
+before an approval is granted. The second run exists because validation is a
+snapshot and approval is a decision taken later. A duplicate invoice is the case
+that proves it: two copies can both be valid when they arrive, and only the first
+one written makes the second a duplicate. Re-validating at the moment of approval
+closes that window at the human boundary.
+
+A refused approval is itself a recorded outcome. The route commits the
+re-validation and the status change before the refusal unwinds, so the document
+shows why it was refused rather than silently reverting to `validated`.
 
 The distinction the rules exist to draw is between a draft that parses and a
 draft that could be true. A settlement discount printed below the line items
@@ -265,9 +281,12 @@ cannot approve a version nobody read. That check sits in front of the same
 which is what a single-process free tier needs. The job table is the source of
 truth either way.
 
-The mock destination keeps its records in a `crm_record` table with a `UNIQUE`
-idempotency key, so its deduplication is shared by every process rather than
-living in one process's memory. That matters because the API and the worker are
+The mock destination keeps its records in a `crm_record` table with two unique
+constraints — the idempotency key, and a business key of normalised supplier plus
+invoice number — so its deduplication is shared by every process rather than
+living in one process's memory. The business key is the backstop behind the
+duplicate rule: even if validation and approval were both wrong, the destination
+physically cannot hold the same invoice twice. That matters because the API and the worker are
 separate processes: an in-memory mock would prove the contract only inside one of
 them. Two independent guards now hold — `crm_write.idempotency_key` on our side of
 the boundary, `crm_record.idempotency_key` on the destination's — which is the

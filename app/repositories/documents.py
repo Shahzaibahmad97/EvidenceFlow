@@ -75,22 +75,35 @@ def append_event(
     return event
 
 
-def known_invoice_numbers(session: Session, *, exclude_document_id: str) -> frozenset[tuple[str, str]]:
-    """Supplier/number pairs already extracted from other documents."""
+COMMITTED_STATUSES = (DocumentStatus.APPROVED, DocumentStatus.WRITTEN)
+
+
+def business_key(draft: dict[str, Any] | None) -> tuple[str, str] | None:
+    if not draft:
+        return None
+    supplier = draft.get("supplier", {}).get("value", "")
+    number = draft.get("invoice_number", {}).get("value", "")
+    if not supplier or not number:
+        return None
+    return normalize_supplier(supplier), number.strip()
+
+
+def committed_invoice_numbers(
+    session: Session, *, exclude_document_id: str
+) -> frozenset[tuple[str, str]]:
+    """Numbers already committed downstream. An uncommitted copy claims nothing."""
     stmt = (
         select(Extraction.draft)
+        .join(Document, Document.id == Extraction.document_id)
         .where(
-            Extraction.document_id != exclude_document_id,
-            Extraction.draft.is_not(None),
+            Document.id != exclude_document_id,
+            Document.status.in_(COMMITTED_STATUSES),
+            Extraction.payload_hash == Document.approved_payload_hash,
         )
     )
-    pairs = set()
-    for draft in session.scalars(stmt):
-        supplier = draft.get("supplier", {}).get("value", "")
-        number = draft.get("invoice_number", {}).get("value", "")
-        if supplier and number:
-            pairs.add((normalize_supplier(supplier), number.strip()))
-    return frozenset(pairs)
+    return frozenset(
+        pair for draft in session.scalars(stmt) if (pair := business_key(draft)) is not None
+    )
 
 
 def record_validation(

@@ -25,6 +25,8 @@ def settings() -> Settings:
         seed_on_start=False,
         fixture_dir=Path(__file__).parent / "fixtures",
         auto_create_schema=True,
+        rate_limit_per_minute=60,
+        max_body_bytes=256 * 1024,
     )
 
 

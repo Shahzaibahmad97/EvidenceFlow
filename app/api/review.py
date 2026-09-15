@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_actor, get_crm, get_session
 from app.api.highlight import segments
+from app.api.errors import commit_refusal
 from app.domain.approval import ApprovalError, idempotency_key
 from app.domain.schema import InvoiceDraft
 from app.providers.crm import CrmClient, CrmError
@@ -87,7 +88,7 @@ def approve(
     try:
         approve_extraction(session, document, extraction, actor=actor)
     except ApprovalError as exc:
-        return _back(document_id, str(exc))
+        return _back(document_id, str(commit_refusal(session, exc)))
     return _back(document_id, f"Approved by {actor}.")
 
 
@@ -100,7 +101,9 @@ def write(
     document = _require(session, document_id)
     try:
         outcome = write_approved_record(session, document, crm)
-    except (ApprovalError, CrmError) as exc:
+    except ApprovalError as exc:
+        return _back(document_id, str(commit_refusal(session, exc)))
+    except CrmError as exc:
         return _back(document_id, str(exc))
     verb = "Wrote" if outcome.called_destination else "Already written as"
     return _back(document_id, f"{verb} {outcome.external_id}.")
