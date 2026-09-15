@@ -314,6 +314,9 @@ builds both — one database from migrations, one from the models — and compar
 tables, columns, primary keys and unique constraints. They must match exactly.
 
 The PostgreSQL-specific tests run when `EVIDENCEFLOW_TEST_POSTGRES_URL` is set, in
-CI and locally. They cover what SQLite cannot: that migrations apply on the real
+CI and locally. They need their own database, because they drop and recreate the
+schema between tests; pointing them at a database a deployment is using produces
+failures that look like flakes and are not. The fixture refuses to run against a
+database named like a deployment rather than letting that happen quietly. They cover what SQLite cannot: that migrations apply on the real
 dialect, that `FOR UPDATE SKIP LOCKED` claims each job exactly once under genuine
 concurrency, and that racing writers produce one destination record.

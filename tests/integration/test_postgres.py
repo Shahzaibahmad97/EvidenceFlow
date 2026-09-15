@@ -30,6 +30,8 @@ pytestmark = pytest.mark.skipif(
     not POSTGRES_URL, reason="set EVIDENCEFLOW_TEST_POSTGRES_URL to run PostgreSQL tests"
 )
 
+DEPLOYMENT_DATABASES = {"evidenceflow"}
+
 ACTOR = "reviewer@example.com"
 NAME = "inv_001_acme"
 WORKERS = 6
@@ -37,6 +39,11 @@ WORKERS = 6
 
 @pytest.fixture
 def postgres(settings):
+    database = POSTGRES_URL.rsplit("/", 1)[-1].split("?")[0]
+    assert database not in DEPLOYMENT_DATABASES, (
+        f"{database!r} looks like a deployment database and these tests drop the schema; "
+        "point EVIDENCEFLOW_TEST_POSTGRES_URL at a dedicated test database"
+    )
     engine = build_engine(POSTGRES_URL)
     with engine.begin() as connection:
         connection.execute(text("DROP SCHEMA public CASCADE"))
