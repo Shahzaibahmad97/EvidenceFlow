@@ -22,26 +22,29 @@ up.
 
 ## Candidate platforms
 
+Free tiers move. These were checked in September 2026 and should be re-checked
+against each provider's current pricing page before signing up.
+
 | Platform | Free tier shape | Fit |
 |---|---|---|
-| **Render** web service | 512 MB, sleeps after ~15 minutes idle, cold start under a minute, no persistent disk | Best fit. Real Docker or native Python, a stable URL, pairs with hosted Postgres |
-| **Neon** Postgres | Free project, suspends when idle, wakes on connect | Best fit for state. Week 4 needs `SELECT ... FOR UPDATE SKIP LOCKED` |
-| **Hugging Face Spaces** (Docker) | Free CPU, no card required, public by default, ephemeral storage | Best fallback. Zero friction, good for a portfolio link, but storage resets |
-| **Koyeb** | One free instance | Workable alternative to Render |
-| **Supabase** Postgres | Free project with idle pausing | Alternative to Neon |
-| **Fly.io** | Card required, small allowance | Avoid for a free demo |
-| **Railway** | Trial credit, then paid | Not free in practice |
-| **Vercel / Cloudflare Workers** | Serverless | Poor fit: long-lived database connections and, from week 4, a background worker |
+| **Render** web service | No card, Docker runtime, 512 MB, sleeps after ~15 minutes idle, cold start under a minute, ephemeral disk | Best fit, and what `render.yaml` describes |
+| **Koyeb** | One free web service, 512 MB, scales to zero after an hour idle; may ask for card verification | Workable alternative |
+| **Neon** PostgreSQL | Free project, no card, suspends when idle | Add only if the demo's state must survive a restart |
+| **Hugging Face Spaces** | **Not free for this.** Static Spaces are free; a Space that runs compute — Docker or Gradio — needs PRO at $9/month | Avoid unless already paying |
+| **Fly.io**, **Railway** | Card required, or trial credit only | Not free in practice |
+| **Vercel / Cloudflare Workers** | Serverless | Poor fit: long-lived database connections and a background worker |
 
-**Recommendation: Render free web service + Neon free Postgres.** Hugging Face
-Spaces is the fallback if a card-free signup matters more than durable state.
+**Recommendation: a Render free web service, no database service.** The container
+keeps its state in SQLite on the instance disk, which does not survive a restart
+or deploy on the free plan, so the demo reseeds its thirty synthetic documents
+whenever it comes back. Everything is synthetic, so nothing is lost that matters.
 
-The repository carries both: `render.yaml` is a Render Blueprint, and
-`deploy/huggingface/` plus `scripts/publish_space.sh` publish a Space.
+If the demo's state should survive restarts, create a free Neon project and set
+its connection string as `EVIDENCEFLOW_DATABASE_URL` on the service. The same
+image takes it with no change and migrations run on the way up.
 
-Both sleep when idle. A cold start costs the first visitor under a minute, which
-is acceptable for a portfolio link and worth saying out loud in the case study
-rather than hiding.
+Render free instances sleep when idle. The first visitor after a quiet period
+waits under a minute, which is worth saying in the case study rather than hiding.
 
 ## What is still missing
 
@@ -135,10 +138,15 @@ worker container stopped and restarted mid-job with the work completing and no
 duplicate record.
 
 
-## Hugging Face Spaces
+## Hugging Face Spaces — needs a paid plan
 
-A Docker Space needs three things, and the image already satisfies all of them:
-it runs as uid 1000, it writes only under `/home/user`, and its port is declared.
+Kept because the work is done and it is a few minutes away if PRO is ever worth
+it, but **a Space that runs compute is not free**: Docker and Gradio Spaces both
+require PRO for a personal account. Only Static Spaces run on the free tier, and
+a static page cannot run this.
+
+The image satisfies what a Docker Space needs — it runs as uid 1000, writes only
+under `/home/user`, and declares its port.
 
 ```bash
 HF_TOKEN=hf_xxx ./scripts/publish_space.sh <username>/evidenceflow

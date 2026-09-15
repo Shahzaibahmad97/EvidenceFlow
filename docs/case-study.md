@@ -119,6 +119,7 @@ So the stack was run, not assumed:
 | End-to-end suite against the containerised API | **61 of 61** |
 | Worker container stopped mid-job, then restarted | job resumed and completed, one destination record |
 | Single-process image (`scripts/start.sh`, the shape a free tier runs) | migrations, seeding and an in-process worker on boot; **61 of 61** |
+| Same image with the port injected by the host, as a platform does | healthy, seeded, **61 of 61** |
 | Destination reconciliation | records, distinct invoices and distinct idempotency keys all equal |
 
 `scripts/e2e_live.py` is the suite. It drives the documents a deployment is
