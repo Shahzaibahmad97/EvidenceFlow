@@ -79,7 +79,7 @@ def test_concurrent_workers_claim_each_job_once(postgres, fixtures):
         Worker(
             session_factory=postgres,
             provider=FakeProvider.from_fixtures(fixtures.directory),
-            crm=DatabaseCrm(postgres),
+            crm=None,
             worker_id=f"worker-{index}",
         )
         for index in range(WORKERS)
@@ -104,13 +104,11 @@ def test_concurrent_writes_create_one_record_on_postgres(postgres, fixtures):
         approve_extraction(session, document, extraction, actor=ACTOR)
         payload_hash = extraction.payload_hash
 
-    crm = DatabaseCrm(postgres)
-
     def attempt(_):
         try:
             with session_scope(postgres) as session:
                 outcome = write_approved_record(
-                    session, repo.get_document(session, document_id), crm
+                    session, repo.get_document(session, document_id), DatabaseCrm(session)
                 )
                 return "called" if outcome.called_destination else "no-op"
         except Exception as exc:

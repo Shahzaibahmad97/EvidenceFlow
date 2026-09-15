@@ -6,7 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     EVIDENCEFLOW_PROVIDER=fake \
     EVIDENCEFLOW_RUN_WORKER=true \
     EVIDENCEFLOW_SEED_ON_START=true \
-    EVIDENCEFLOW_FIXTURE_DIR=/app/tests/fixtures
+    EVIDENCEFLOW_FIXTURE_DIR=/app/tests/fixtures \
+    EVIDENCEFLOW_DATABASE_URL=sqlite:////home/user/data/evidenceflow.db \
+    HOME=/home/user \
+    PORT=8000
+
+RUN useradd --create-home --uid 1000 user && mkdir -p /home/user/data && chown -R user /home/user
 
 WORKDIR /app
 
@@ -18,8 +23,10 @@ RUN pip install --no-cache-dir ".[postgres]"
 COPY tests/fixtures ./tests/fixtures
 COPY scripts/start.sh ./scripts/start.sh
 
-EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
-  CMD python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"
+USER user
 
-CMD ["uvicorn", "app.api.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s \
+  CMD python -c "import os,urllib.request;urllib.request.urlopen(f'http://localhost:{os.environ[\"PORT\"]}/health')"
+
+CMD ["./scripts/start.sh"]
