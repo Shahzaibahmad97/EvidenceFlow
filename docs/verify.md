@@ -24,7 +24,8 @@ EVIDENCEFLOW_SEED_ON_START=true EVIDENCEFLOW_RUN_WORKER=true \
   uvicorn app.api.app:create_app --factory
 ```
 
-Open <http://localhost:8000/review>. You should see thirty documents:
+Open <http://localhost:8000> — it lands on the review queue. You should see
+thirty documents:
 **15 validated, 13 needs review, 2 extraction failed.**
 
 Run the automated pass first if you want the short version:

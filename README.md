@@ -76,6 +76,7 @@ EVIDENCEFLOW_SEED_ON_START=true EVIDENCEFLOW_RUN_WORKER=true \
 | GET    | `/jobs/{id}`                    | job status, attempts, failure kind          |
 | GET    | `/jobs/review`                  | jobs a person needs to look at              |
 | GET    | `/documents/{id}`               | draft, evidence, validation, approval, events |
+| GET    | `/`                             | redirects to the review screen              |
 | GET    | `/health`                       | liveness                                    |
 | GET    | `/review`                       | review screen: evidence, validation, approval |
 
