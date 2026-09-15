@@ -13,6 +13,9 @@ Either path works. Both seed thirty synthetic documents and process them.
 docker compose up --build
 ```
 
+**Published Space** — if a Hugging Face Space is running, open it and skip to
+check 1. Everything below works there except the container commands in check 7.
+
 **Without containers** — one process, SQLite:
 
 ```bash

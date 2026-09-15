@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.domain.jobs import DEFAULT_LEASE, JobType
 from app.providers.base import ExtractionProvider
-from app.providers.crm import CrmClient
+from app.providers.crm import CrmClient, DatabaseCrm
 from app.repositories import documents as repo
 from app.repositories.models import Job
 from app.repositories.session import session_scope
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class Worker:
     session_factory: sessionmaker[Session]
     provider: ExtractionProvider
-    crm: CrmClient
+    crm: CrmClient | None = None
     worker_id: str = "worker-1"
     lease: timedelta = DEFAULT_LEASE
     allow_value_fallback: bool = False
@@ -90,7 +90,7 @@ class Worker:
                     return outcome.error
                 validate_extraction(session, document, outcome.extraction)
             elif job.type == JobType.WRITE:
-                write_approved_record(session, document, self.crm)
+                write_approved_record(session, document, self.crm or DatabaseCrm(session))
             else:
                 return LookupError(f"unknown job type {job.type}")
         except Exception as exc:

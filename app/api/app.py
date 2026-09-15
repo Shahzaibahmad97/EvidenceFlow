@@ -9,7 +9,7 @@ from app.api.review import router as review_router
 from app.api.routes import router
 from app.config import Settings
 from app.providers.base import ExtractionProvider
-from app.providers.crm import CrmClient, DatabaseCrm
+from app.providers.crm import CrmClient
 from app.providers.fake import FakeProvider
 from app.repositories.session import build_session_factory
 from app.seed import seed_documents
@@ -37,11 +37,11 @@ def create_app(
     app.state.settings = settings
     app.state.session_factory = build_session_factory(settings)
     app.state.provider = provider or build_provider(settings)
-    app.state.crm = crm or DatabaseCrm(app.state.session_factory)
+    app.state.crm = crm
     app.state.worker = Worker(
         session_factory=app.state.session_factory,
         provider=app.state.provider,
-        crm=app.state.crm,
+        crm=crm,
     )
     app.add_middleware(
         RequestLimits,

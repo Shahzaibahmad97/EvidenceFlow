@@ -5,7 +5,6 @@ import threading
 
 from app.api.app import build_provider
 from app.config import Settings
-from app.providers.crm import DatabaseCrm
 from app.repositories.session import build_session_factory
 from app.workflows.worker import Worker
 
@@ -16,7 +15,6 @@ def main() -> None:
     worker = Worker(
         session_factory=factory,
         provider=build_provider(settings),
-        crm=DatabaseCrm(factory),
         worker_id=f"worker-{threading.get_ident()}",
     )
     stop = threading.Event()

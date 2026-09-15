@@ -36,6 +36,9 @@ up.
 **Recommendation: Render free web service + Neon free Postgres.** Hugging Face
 Spaces is the fallback if a card-free signup matters more than durable state.
 
+The repository carries both: `render.yaml` is a Render Blueprint, and
+`deploy/huggingface/` plus `scripts/publish_space.sh` publish a Space.
+
 Both sleep when idle. A cold start costs the first visitor under a minute, which
 is acceptable for a portfolio link and worth saying out loud in the case study
 rather than hiding.
@@ -130,3 +133,39 @@ migrations applied by the `migrate` container, API and worker running as separat
 containers, 61 end-to-end checks passing against the containerised API, and a
 worker container stopped and restarted mid-job with the work completing and no
 duplicate record.
+
+
+## Hugging Face Spaces
+
+A Docker Space needs three things, and the image already satisfies all of them:
+it runs as uid 1000, it writes only under `/home/user`, and its port is declared.
+
+```bash
+HF_TOKEN=hf_xxx ./scripts/publish_space.sh <username>/evidenceflow
+```
+
+The script builds a Space-shaped tree from `HEAD` — the repository as it is, with
+`deploy/huggingface/README.md` in place of the project README, because a Space
+reads its configuration from that file's front matter — and pushes it. Create the
+Space first at <https://huggingface.co/new-space> with the Docker SDK, or let the
+push create it if your token allows.
+
+Settings worth knowing:
+
+| Setting | Value | Why |
+|---|---|---|
+| `app_port` | 8000 | declared in the Space README front matter; the container listens there |
+| user | uid 1000 | Spaces run the container as that user, and the image creates it |
+| database | `sqlite:////home/user/data/evidenceflow.db` | the image default, under the only writable path |
+| provider | `fake` | no key is present, so the Space cannot spend one |
+
+**Storage on a free Space is ephemeral.** The demo seeds thirty documents on first
+boot and keeps whatever reviewers do to them until the Space restarts, sleeps or
+rebuilds, at which point it seeds again from scratch. Everything is synthetic, so
+nothing is lost that matters. For state that survives a restart, set
+`EVIDENCEFLOW_DATABASE_URL` as a Space secret to a hosted PostgreSQL connection
+string — the same image takes it with no change, and migrations run on the way up.
+
+Raise `EVIDENCEFLOW_RATE_LIMIT_PER_MINUTE` before running `scripts/e2e_live.py`
+against a Space: the suite makes more than sixty writes a minute, and the default
+is sized for a public URL rather than a test run.

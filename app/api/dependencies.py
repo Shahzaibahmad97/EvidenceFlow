@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from fastapi import Header, Request
+from fastapi import Depends, Header, Request
 from sqlalchemy.orm import Session
 
 from app.providers.base import ExtractionProvider
-from app.providers.crm import CrmClient
+from app.providers.crm import CrmClient, DatabaseCrm
 from app.repositories.session import session_scope
 
 
@@ -19,8 +19,8 @@ def get_provider(request: Request) -> ExtractionProvider:
     return request.app.state.provider
 
 
-def get_crm(request: Request) -> CrmClient:
-    return request.app.state.crm
+def get_crm(request: Request, session: Session = Depends(get_session)) -> CrmClient:
+    return request.app.state.crm or DatabaseCrm(session)
 
 
 def get_actor(x_actor: str = Header(default="reviewer")) -> str:
