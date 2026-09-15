@@ -66,7 +66,18 @@ Celery: the free-tier deployment needs no second service and no broker.
 
 ## Deployment steps
 
-1. Create a Neon project, copy the pooled connection string.
+`render.yaml` in the repository root is a Render Blueprint: it declares the web
+service, its free PostgreSQL database, the health check, and every environment
+variable. Pointing Render at the repository is enough; the steps below are what
+that blueprint does, for anyone deploying somewhere else.
+
+The container start command is `scripts/start.sh`, which applies migrations and
+then serves. A single-process host has no separate release step, so the migration
+has to happen on the way up. Compose keeps them apart, as its own service.
+
+1. Create a Neon project, copy the pooled connection string. Render's own free
+   database works too and the blueprint declares one, but it expires; Neon's does
+   not.
 2. Create a Render web service from the repository, Docker runtime.
 3. Set environment variables:
 

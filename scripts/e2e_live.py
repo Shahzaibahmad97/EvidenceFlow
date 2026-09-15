@@ -302,6 +302,15 @@ def case_review_queue(client: httpx.Client, report: Report) -> None:
     report.check("some were refused at the schema boundary", ">extraction failed<" in page)
 
 
+def _refuse_rate_limited(response: httpx.Response) -> None:
+    if response.status_code == 429:
+        raise SystemExit(
+            "the deployment rate-limited this run: it makes more than sixty writes a "
+            "minute. Set EVIDENCEFLOW_RATE_LIMIT_PER_MINUTE higher on the deployment "
+            "you are testing, or run the suite against a local instance."
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default="http://localhost:8000")
@@ -310,7 +319,7 @@ def main() -> int:
     args = parser.parse_args()
 
     report = Report()
-    with httpx.Client(base_url=args.base_url, timeout=30.0) as client:
+    with httpx.Client(base_url=args.base_url, timeout=30.0, event_hooks={"response": [_refuse_rate_limited]}) as client:
         client.get("/health").raise_for_status()
         case_happy_path(client, report)
         case_blocked(client, report)

@@ -101,6 +101,29 @@ mid-flight. There is no read-then-write anywhere in the path.
   refused the moment the first is written — caught by re-validating at approval,
   and by a unique business key at the destination if it ever got that far.
 
+## Verified in containers, not only in tests
+
+Tests prove the logic. They do not prove the thing you deploy, and three of the
+defects I found in this project were only visible once it ran as a container:
+the image installed the package without its PostgreSQL driver, the HTML templates
+were not packaged at all, and the fixture path was derived from the source tree in
+a way that resolves elsewhere once installed.
+
+So the stack was run, not assumed:
+
+| Checked | Result |
+|---|---|
+| Image built from the repository `Dockerfile` | 151 MB, templates and both migrations present inside the running container |
+| `migrate` container | applied the schema to PostgreSQL and exited cleanly |
+| `api` and `worker` as separate containers | API healthy on its own `HEALTHCHECK`; the worker drained all thirty seeded documents |
+| End-to-end suite against the containerised API | **61 of 61** |
+| Worker container stopped mid-job, then restarted | job resumed and completed, one destination record |
+| Single-process image (`scripts/start.sh`, the shape a free tier runs) | migrations, seeding and an in-process worker on boot; **61 of 61** |
+| Destination reconciliation | records, distinct invoices and distinct idempotency keys all equal |
+
+`scripts/e2e_live.py` is the suite. It drives the documents a deployment is
+already seeded with, the way a reviewer would, rather than uploading its own.
+
 ## Measured results
 
 Thirty synthetic documents: twenty for development, ten held out and never used to

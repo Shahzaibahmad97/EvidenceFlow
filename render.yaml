@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: evidenceflow
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    dockerCommand: ./scripts/start.sh
+    envVars:
+      - key: EVIDENCEFLOW_DATABASE_URL
+        fromDatabase:
+          name: evidenceflow-db
+          property: connectionString
+      - key: EVIDENCEFLOW_PROVIDER
+        value: fake
+      - key: EVIDENCEFLOW_RUN_WORKER
+        value: "true"
+      - key: EVIDENCEFLOW_SEED_ON_START
+        value: "true"
+      - key: EVIDENCEFLOW_AUTO_CREATE_SCHEMA
+        value: "false"
+      - key: EVIDENCEFLOW_FIXTURE_DIR
+        value: /app/tests/fixtures
+      - key: EVIDENCEFLOW_RATE_LIMIT_PER_MINUTE
+        value: "60"
+
+databases:
+  - name: evidenceflow-db
+    plan: free
+    region: frankfurt
+    databaseName: evidenceflow
+    user: evidenceflow
