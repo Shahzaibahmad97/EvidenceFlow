@@ -27,6 +27,41 @@ class CrmClient(Protocol):
     def create_record(self, idempotency_key: str, payload: dict[str, Any]) -> CrmRecord: ...
 
 
+class DatabaseCrm:
+    """A mock destination whose deduplication is shared by every process.
+
+    An in-memory mock only proves the contract inside one process; the API and the
+    worker are separate processes in a real deployment.
+    """
+
+    def __init__(self, session_factory: Any) -> None:
+        self._session_factory = session_factory
+
+    def create_record(self, idempotency_key: str, payload: dict[str, Any]) -> CrmRecord:
+        from sqlalchemy.exc import IntegrityError
+
+        from app.repositories.models import CrmRecordRow
+        from app.repositories.session import session_scope
+
+        external_id = external_id_for(idempotency_key)
+        try:
+            with session_scope(self._session_factory) as session:
+                session.add(
+                    CrmRecordRow(
+                        idempotency_key=idempotency_key,
+                        external_id=external_id,
+                        payload=payload,
+                    )
+                )
+        except IntegrityError:
+            return CrmRecord(external_id=external_id, created=False)
+        return CrmRecord(external_id=external_id, created=True)
+
+
+def external_id_for(idempotency_key: str) -> str:
+    return f"CRM-{idempotency_key[:10].upper()}"
+
+
 @dataclass
 class MockCrm:
     records: dict[str, dict[str, Any]] = field(default_factory=dict)

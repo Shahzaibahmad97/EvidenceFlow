@@ -44,15 +44,14 @@ rather than hiding.
 
 | Needed | Status |
 |---|---|
-| `Dockerfile` and `docker-compose.yml` | written; the image build itself has not been run in CI-less environments, so verify it once locally |
-| Postgres schema creation beyond `create_all` | still outstanding. Fine for a demo, Alembic before anything real |
+| `Dockerfile` and `docker-compose.yml` | written, with a `migrate` service the API and worker wait on. CI builds the image on every push |
+| Postgres schema creation beyond `create_all` | done. Alembic owns the schema; `python -m app.migrate` upgrades to head and Compose runs it before the API starts |
 | A review screen | done, at `/review` |
 | Seeded synthetic documents on boot | done, `EVIDENCEFLOW_SEED_ON_START=true`, which also queues each document for extraction |
 | Request size limits and rate limiting | done, `app/api/limits.py` |
 | A worker process | done, in-process or as its own service |
 
-The only real gap before a public URL is schema migration, and only if the
-demo is expected to survive a schema change without being reseeded.
+Nothing here blocks a public URL.
 
 ## Week 4 consequence
 
@@ -76,7 +75,10 @@ Celery: the free-tier deployment needs no second service and no broker.
    EVIDENCEFLOW_PROVIDER=fake
    EVIDENCEFLOW_RUN_WORKER=true
    EVIDENCEFLOW_SEED_ON_START=true
+   EVIDENCEFLOW_AUTO_CREATE_SCHEMA=false
    ```
+
+   Run `python -m app.migrate` as the release command, before the service starts.
 
    No `OPENAI_API_KEY`.
 4. Point the health check at `/health`.

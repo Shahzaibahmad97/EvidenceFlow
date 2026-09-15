@@ -13,15 +13,28 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
-  api:
+  migrate:
     build: .
     depends_on:
       db:
         condition: service_healthy
     environment:
       EVIDENCEFLOW_DATABASE_URL: postgresql+psycopg://evidenceflow:evidenceflow@db:5432/evidenceflow
+    command: ["python", "-m", "app.migrate"]
+    restart: "no"
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      EVIDENCEFLOW_DATABASE_URL: postgresql+psycopg://evidenceflow:evidenceflow@db:5432/evidenceflow
       EVIDENCEFLOW_PROVIDER: fake
       EVIDENCEFLOW_FIXTURE_DIR: /app/tests/fixtures
+      EVIDENCEFLOW_AUTO_CREATE_SCHEMA: "false"
       EVIDENCEFLOW_RUN_WORKER: "false"
       EVIDENCEFLOW_SEED_ON_START: "true"
     ports:
@@ -32,10 +45,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       EVIDENCEFLOW_DATABASE_URL: postgresql+psycopg://evidenceflow:evidenceflow@db:5432/evidenceflow
       EVIDENCEFLOW_PROVIDER: fake
       EVIDENCEFLOW_FIXTURE_DIR: /app/tests/fixtures
+      EVIDENCEFLOW_AUTO_CREATE_SCHEMA: "false"
     command: ["python", "-m", "app.worker_process"]
 
 volumes:

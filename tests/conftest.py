@@ -24,6 +24,7 @@ def settings() -> Settings:
         run_worker=False,
         seed_on_start=False,
         fixture_dir=Path(__file__).parent / "fixtures",
+        auto_create_schema=True,
     )
 
 

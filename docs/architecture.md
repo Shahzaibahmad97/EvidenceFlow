@@ -265,12 +265,36 @@ cannot approve a version nobody read. That check sits in front of the same
 which is what a single-process free tier needs. The job table is the source of
 truth either way.
 
-One honest limitation: the mock destination lives in memory, so the API and worker
-containers hold separate copies. Its deduplication proves the contract within a
-process; across processes the `UNIQUE` constraint on `crm_write.idempotency_key`
-is what holds the line. A real destination would deduplicate server-side.
+The mock destination keeps its records in a `crm_record` table with a `UNIQUE`
+idempotency key, so its deduplication is shared by every process rather than
+living in one process's memory. That matters because the API and the worker are
+separate processes: an in-memory mock would prove the contract only inside one of
+them. Two independent guards now hold — `crm_write.idempotency_key` on our side of
+the boundary, `crm_record.idempotency_key` on the destination's — which is the
+shape a real destination has.
+
+`MockCrm`, the in-memory implementation, stays for tests that need to inject
+failures and count calls.
 
 Mutating requests pass through `RequestLimits`: bodies over 256 KB are refused,
 and a sliding window caps write traffic per client. Reads are never limited. This
 exists because the endpoints are unauthenticated by design in the demo, and an
 unauthenticated public endpoint without limits is an invitation.
+
+
+## Schema migrations
+
+Alembic owns the schema. `python -m app.migrate` upgrades a database to head, and
+the Compose stack runs it as its own service that the API and worker wait on.
+Those services run with `EVIDENCEFLOW_AUTO_CREATE_SCHEMA=false`, so a deployed
+database is only ever changed by a migration.
+
+`create_all` remains for tests and local development, where paying for a migration
+run per test would buy nothing. Two paths to one schema is a drift risk, so a test
+builds both — one database from migrations, one from the models — and compares
+tables, columns, primary keys and unique constraints. They must match exactly.
+
+The PostgreSQL-specific tests run when `EVIDENCEFLOW_TEST_POSTGRES_URL` is set, in
+CI and locally. They cover what SQLite cannot: that migrations apply on the real
+dialect, that `FOR UPDATE SKIP LOCKED` claims each job exactly once under genuine
+concurrency, and that racing writers produce one destination record.
