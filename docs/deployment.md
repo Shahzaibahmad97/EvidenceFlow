@@ -44,7 +44,7 @@ rather than hiding.
 
 | Needed | Status |
 |---|---|
-| `Dockerfile` and `docker-compose.yml` | written, with a `migrate` service the API and worker wait on. CI builds the image on every push |
+| `Dockerfile` and `docker-compose.yml` | done, with a `migrate` service the API and worker wait on. CI builds the image on every push, and the stack has been run end to end: migrations, API and worker as separate containers against PostgreSQL |
 | Postgres schema creation beyond `create_all` | done. Alembic owns the schema; `python -m app.migrate` upgrades to head and Compose runs it before the API starts |
 | A review screen | done, at `/review` |
 | Seeded synthetic documents on boot | done, `EVIDENCEFLOW_SEED_ON_START=true`, which also queues each document for extraction |
@@ -91,3 +91,31 @@ Celery: the free-tier deployment needs no second service and no broker.
 
 Zero, with these choices. The only cost risk in the project is the model
 provider, and public deployments do not carry the key.
+
+
+## Building behind a registry-blocked proxy
+
+`FROM` is parameterised:
+
+```dockerfile
+ARG BASE_IMAGE=python:3.12-slim
+FROM ${BASE_IMAGE}
+```
+
+The default is what everyone should use. Where a proxy blocks container
+registries, point the build at a base you can obtain another way:
+
+```bash
+docker build --build-arg BASE_IMAGE=my-mirror/python:3.12-slim -t evidenceflow .
+```
+
+That base must trust whatever CA the proxy presents, or `pip install` inside the
+build fails on certificate verification. Install the CA in the base image rather
+than in this Dockerfile: the certificate belongs to the network the build runs
+on, not to the application.
+
+The stack has been verified this way — image built from the real Dockerfile,
+migrations applied by the `migrate` container, API and worker running as separate
+containers, 61 end-to-end checks passing against the containerised API, and a
+worker container stopped and restarted mid-job with the work completing and no
+duplicate record.
