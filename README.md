@@ -18,8 +18,9 @@ Synthetic data only. No real client documents are in this repository.
 
 All six weeks are complete. Start with the
 [case study](docs/case-study.md) for what was built and what it measures, the
-[evaluation report](evals/report.md) for the numbers, and
-[docs/runbook.md](docs/runbook.md) for how it recovers.
+[evaluation report](evals/report.md) for the numbers,
+[docs/verify.md](docs/verify.md) to check the claims yourself in fifteen minutes,
+and [docs/runbook.md](docs/runbook.md) for how it recovers.
 
 ## Quickstart
 
