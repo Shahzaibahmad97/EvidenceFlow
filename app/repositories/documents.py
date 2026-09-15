@@ -20,8 +20,12 @@ from app.repositories.models import (
 )
 
 
-def create_document(session: Session, *, filename: str, source_text: str) -> Document:
+def create_document(
+    session: Session, *, filename: str, source_text: str, document_id: str | None = None
+) -> Document:
     document = Document(filename=filename, source_text=source_text)
+    if document_id is not None:
+        document.id = document_id
     session.add(document)
     session.flush()
     return document
