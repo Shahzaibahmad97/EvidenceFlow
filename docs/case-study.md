@@ -70,8 +70,8 @@ hash of the approved payload, and any new extraction clears it. A correction
 invalidates a prior approval by construction, not by a check somebody has to
 remember to write.
 
-**Idempotency is structural.** The key is derived on the server from the document
-id and the approved payload hash, length-prefixed before hashing so no pair of ids
+**Idempotency is structural, at both ends.** The key is derived on the server from
+the document id and the approved payload hash, length-prefixed before hashing so no pair of ids
 can collide by shifting the boundary between them. The key column is `UNIQUE`. The
 mock destination deduplicates on the same key, so replay safety holds end to end
 rather than only on our side. The document moves to `written` through one guarded
@@ -80,7 +80,7 @@ mid-flight. There is no read-then-write anywhere in the path.
 
 ## Failure tests
 
-180 tests, none of which need an API key. The ones that shaped the design:
+200 tests, none of which need an API key. The ones that shaped the design:
 
 - **Twenty replays of an approved write** produce one destination record and one
   destination call.
@@ -97,6 +97,9 @@ mid-flight. There is no read-then-write anywhere in the path.
   classified permanent and goes straight to the review queue on the first attempt.
 - **An unrecognised error is treated as permanent.** Retrying something nobody has
   reasoned about is how one failure becomes a storm.
+- **Two copies of one invoice** both validate on arrival, and the second is
+  refused the moment the first is written — caught by re-validating at approval,
+  and by a unique business key at the destination if it ever got that far.
 
 ## Measured results
 
@@ -166,16 +169,20 @@ in one process on a free tier, which is how the demo is deployed.
 to block the vertical slice. Nothing in the data access layer assumes SQLite
 beyond connection pooling.
 
-**The destination is a mock, in-process.** Its deduplication proves the contract
-end to end within a process. Across processes, our `UNIQUE` constraint is what
-holds; a real CRM would deduplicate server-side. The distinction is real and worth
-stating rather than glossing.
+**The destination is a mock, but a shared one.** It stores records in a table with
+a unique idempotency key, so its deduplication is visible to every process rather
+than to one process's memory. Two independent guards hold: ours on `crm_write`,
+the destination's on `crm_record`. A real CRM would deduplicate server-side in
+exactly this shape. What is still missing is a real connector's authentication and
+reconciliation.
 
 **A stub reviewer identity.** Approval records who granted it, but there is no
 authentication. That is a deliberate scope boundary, not an oversight.
 
-**`schema_version` is recorded but there is no migration path** for a version bump
-mid-dataset. It would need one before real use.
+**`schema_version` is recorded on every extraction, and the database schema is
+migrated by Alembic.** What is still missing is a policy for what to do with
+extractions written under an older contract version — re-extract, or read them
+through a compatibility shim. That is a product decision, not a technical gap.
 
 ## What I would not claim
 

@@ -114,6 +114,21 @@ class Job(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
+class CrmRecordRow(Base):
+    __tablename__ = "crm_record"
+    __table_args__ = (
+        UniqueConstraint("idempotency_key", name="uq_crm_record_idempotency_key"),
+        UniqueConstraint("business_key", name="uq_crm_record_business_key"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(String(64))
+    business_key: Mapped[str] = mapped_column(String(320))
+    external_id: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class ValidationResult(Base):
     __tablename__ = "validation_result"
 

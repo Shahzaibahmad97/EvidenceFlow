@@ -118,3 +118,38 @@ def test_re_extraction_invalidates_an_approval(client, fixtures):
 
     assert response.status_code == 404
     assert client.get(f"/documents/{document_id}").json()["status"] == DocumentStatus.VALIDATED
+
+
+def test_listing_documents(client, fixtures):
+    first = _upload(client, fixtures, "inv_001_acme")
+    second = _upload(client, fixtures, "inv_003_bluepeak")
+    client.post(f"/documents/{first}/extract")
+
+    listed = client.get("/documents").json()
+
+    assert [row["id"] for row in listed] == [first, second]
+    assert {row["filename"] for row in listed} == {"inv_001_acme.txt", "inv_003_bluepeak.txt"}
+    assert [row["status"] for row in listed] == [DocumentStatus.VALIDATED, DocumentStatus.RECEIVED]
+
+
+def test_listing_is_empty_before_anything_arrives(client):
+    assert client.get("/documents").json() == []
+
+
+def test_a_refused_approval_is_recorded_not_rolled_back(client, fixtures):
+    original = _through_extraction(client, fixtures, "inv_001_acme")
+    copy = _through_extraction(client, fixtures, "adv_duplicate_number")
+    client.post(f"/documents/{original}/approve")
+    client.post(f"/documents/{original}/write")
+
+    refused = client.post(f"/documents/{copy}/approve")
+
+    assert refused.status_code == 409
+    assert "invoice_number_not_duplicate" in refused.json()["detail"]["message"]
+
+    document = client.get(f"/documents/{copy}").json()
+    assert document["status"] == DocumentStatus.NEEDS_REVIEW
+    assert "invoice_number_not_duplicate" in {
+        row["rule"] for row in document["extraction"]["validation"] if row["outcome"] != "pass"
+    }
+    assert [event["type"] for event in document["events"]].count("validation_completed") == 2

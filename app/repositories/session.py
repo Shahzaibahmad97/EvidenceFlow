@@ -11,13 +11,13 @@ from app.config import Settings
 from app.repositories.models import Base
 
 
-def build_engine(database_url: str):
+def build_engine(database_url: str, **overrides):
     if not database_url.startswith("sqlite"):
-        return create_engine(database_url, future=True)
+        return create_engine(database_url, future=True, **overrides)
     kwargs = {"connect_args": {"check_same_thread": False}}
     if _is_in_memory(database_url):
         kwargs["poolclass"] = StaticPool
-    return create_engine(database_url, future=True, **kwargs)
+    return create_engine(database_url, future=True, **{**kwargs, **overrides})
 
 
 def _is_in_memory(database_url: str) -> bool:
@@ -26,7 +26,8 @@ def _is_in_memory(database_url: str) -> bool:
 
 def build_session_factory(settings: Settings) -> sessionmaker[Session]:
     engine = build_engine(settings.database_url)
-    Base.metadata.create_all(engine)
+    if settings.auto_create_schema:
+        Base.metadata.create_all(engine)
     return sessionmaker(bind=engine, expire_on_commit=False)
 
 

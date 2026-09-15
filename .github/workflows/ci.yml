@@ -8,12 +8,26 @@ on:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: evidenceflow
+          POSTGRES_PASSWORD: evidenceflow
+          POSTGRES_DB: evidenceflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U evidenceflow"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      EVIDENCEFLOW_TEST_POSTGRES_URL: postgresql+psycopg://evidenceflow:evidenceflow@localhost:5432/evidenceflow
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[dev]"
+      - run: pip install -e ".[dev,postgres]"
       - run: pytest
       - run: python scripts/demo.py
       - run: python scripts/demo_approval.py

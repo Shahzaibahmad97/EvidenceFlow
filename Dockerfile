@@ -9,9 +9,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md alembic.ini ./
 COPY app ./app
-RUN pip install --no-cache-dir .
+COPY migrations ./migrations
+RUN pip install --no-cache-dir ".[postgres]"
 
 COPY tests/fixtures ./tests/fixtures
 
