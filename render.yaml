@@ -1,3 +1,13 @@
+# Free deployment: one web service, no database service, no credit card.
+#
+# The container keeps its state in SQLite on the instance's disk. That disk does
+# not survive a restart or a deploy on the free plan, so the demo reseeds its
+# thirty synthetic documents whenever it comes back up. Everything is synthetic,
+# so nothing is lost that matters.
+#
+# For state that survives restarts, add a hosted PostgreSQL connection string as
+# EVIDENCEFLOW_DATABASE_URL in the service's environment. Migrations run on the
+# way up either way.
 services:
   - type: web
     name: evidenceflow
@@ -7,10 +17,6 @@ services:
     healthCheckPath: /health
     dockerCommand: ./scripts/start.sh
     envVars:
-      - key: EVIDENCEFLOW_DATABASE_URL
-        fromDatabase:
-          name: evidenceflow-db
-          property: connectionString
       - key: EVIDENCEFLOW_PROVIDER
         value: fake
       - key: EVIDENCEFLOW_RUN_WORKER
@@ -23,10 +29,3 @@ services:
         value: /app/tests/fixtures
       - key: EVIDENCEFLOW_RATE_LIMIT_PER_MINUTE
         value: "60"
-
-databases:
-  - name: evidenceflow-db
-    plan: free
-    region: frankfurt
-    databaseName: evidenceflow
-    user: evidenceflow
