@@ -30,7 +30,10 @@ Run the automated pass first if you want the short version:
 python scripts/e2e_live.py --base-url http://localhost:8000
 ```
 
-61 checks, and it prints which document it used for each one.
+61 checks, and it prints which document it used for each one. It makes more than
+sixty writes a minute, so against a deployment left at the default rate limit it
+will stop and tell you to raise `EVIDENCEFLOW_RATE_LIMIT_PER_MINUTE`. The default
+is meant for a public URL, not for a test run.
 
 ---
 

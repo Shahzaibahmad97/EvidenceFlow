@@ -16,6 +16,7 @@ COPY migrations ./migrations
 RUN pip install --no-cache-dir ".[postgres]"
 
 COPY tests/fixtures ./tests/fixtures
+COPY scripts/start.sh ./scripts/start.sh
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
