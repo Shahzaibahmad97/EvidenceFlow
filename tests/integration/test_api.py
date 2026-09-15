@@ -153,3 +153,23 @@ def test_a_refused_approval_is_recorded_not_rolled_back(client, fixtures):
         row["rule"] for row in document["extraction"]["validation"] if row["outcome"] != "pass"
     }
     assert [event["type"] for event in document["events"]].count("validation_completed") == 2
+
+
+def test_the_bare_url_lands_on_the_review_queue(client):
+    response = client.get("/", follow_redirects=False)
+
+    assert response.status_code == 302
+    assert response.headers["location"] == "/review"
+
+
+def test_following_the_bare_url_renders_the_queue(client, fixtures):
+    _upload(client, fixtures, "inv_001_acme")
+
+    page = client.get("/", follow_redirects=True)
+
+    assert page.status_code == 200
+    assert "inv_001_acme.txt" in page.text
+
+
+def test_a_browser_asking_for_a_favicon_gets_no_error(client):
+    assert client.get("/favicon.ico").status_code == 204

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_actor, get_crm, get_provider, get_session
@@ -37,6 +38,16 @@ from app.services.validation import validate_extraction
 from app.workflows import queue
 
 router = APIRouter()
+
+
+@router.get("/", include_in_schema=False)
+def index() -> RedirectResponse:
+    return RedirectResponse("/review", status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/health")
