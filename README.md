@@ -18,19 +18,21 @@ Synthetic data only. No real client documents are in this repository.
 
 All six weeks are complete. Start with the
 [case study](docs/case-study.md) for what was built and what it measures, the
-[evaluation report](evals/report.md) for the numbers, and
-[docs/runbook.md](docs/runbook.md) for how it recovers.
+[evaluation report](evals/report.md) for the numbers,
+[docs/verify.md](docs/verify.md) to check the claims yourself in fifteen minutes,
+and [docs/runbook.md](docs/runbook.md) for how it recovers.
 
 ## Quickstart
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                        # 180 tests, no API key required
+pytest                        # 200 tests, no API key required
 python scripts/demo.py        # extracts the five sample invoices, prints the evidence
 python scripts/demo_approval.py  # approval, idempotent write, twenty replays
 python scripts/demo_recovery.py  # 503, worker death mid-write, recovery, one record
 python evals/run.py           # replays all 30 documents, regenerates the report
+python scripts/e2e_live.py    # 61 checks against a running deployment
 ```
 
 Every deterministic test runs against a fake provider. A real provider call is

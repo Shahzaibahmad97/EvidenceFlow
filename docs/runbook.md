@@ -18,6 +18,7 @@ is answerable from two tables: `job` and `event`.
    | `extraction_failed` | the provider call or its output failed | read `extraction.error_code` |
    | `extracted` | extracted, not yet validated | a validation step was interrupted |
    | `needs_review` | a business rule blocked it | read `validation_result`; this is a person's decision, not a bug |
+| `needs_review` after an approval attempt | re-validation at approval time refused it | the usual cause is another copy of the invoice being written first |
    | `validated` | waiting for a human | nothing to fix |
    | `approved` | approved, write not settled | look at the write job |
    | `written` | done | nothing to do |
@@ -46,6 +47,30 @@ A job that exhausted its retries is recorded as `transient_exhausted`, not
 `permanent`. The distinction matters: the first usually means the dependency was
 down for longer than the budget, the second means this document will never
 succeed unchanged.
+
+## A duplicate invoice
+
+Duplicate protection has three layers, and they fail in this order:
+
+1. **Validation at intake** blocks a number already committed by another document.
+2. **Re-validation at approval** blocks a number committed since intake. This is
+   the layer that catches two copies arriving together.
+3. **The destination's business key** refuses a second record for the same
+   supplier and invoice number, whatever the application believed.
+
+If a reviewer reports that a legitimate invoice is blocked as a duplicate, look
+for the document that already holds the number:
+
+```sql
+SELECT d.id, d.filename, d.status
+  FROM document d
+  JOIN extraction e ON e.payload_hash = d.approved_payload_hash
+ WHERE d.status IN ('approved', 'written')
+   AND e.draft -> 'invoice_number' ->> 'value' = '<number>';
+```
+
+If that document should not have been written, the fix is a credit note in the
+destination, not a deletion here.
 
 ## Replaying a job
 

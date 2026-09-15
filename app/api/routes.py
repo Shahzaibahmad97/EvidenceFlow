@@ -16,7 +16,8 @@ from app.api.schemas import (
     ValidationView,
     WriteView,
 )
-from app.domain.approval import ApprovalError, ApprovalMissing
+from app.api.errors import as_http_error, commit_refusal
+from app.domain.approval import ApprovalError
 from app.domain.jobs import JobType
 from app.providers.base import ExtractionProvider
 from app.providers.crm import CrmClient, CrmError
@@ -41,6 +42,11 @@ router = APIRouter()
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/documents", response_model=list[DocumentSummary])
+def list_documents(session: Session = Depends(get_session)) -> list[DocumentSummary]:
+    return [_summary(document) for document in repo.list_documents(session)]
 
 
 @router.post("/documents", response_model=DocumentSummary, status_code=status.HTTP_201_CREATED)
@@ -77,7 +83,7 @@ def approve(
     try:
         approval = approve_extraction(session, document, extraction, actor=actor)
     except ApprovalError as exc:
-        raise _conflict(exc) from exc
+        raise as_http_error(commit_refusal(session, exc)) from exc
     return _approval_view(approval)
 
 
@@ -91,7 +97,7 @@ def write(
     try:
         outcome = write_approved_record(session, document, crm)
     except ApprovalError as exc:
-        raise _conflict(exc) from exc
+        raise as_http_error(commit_refusal(session, exc)) from exc
     except CrmError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY, detail={"code": exc.code, "message": str(exc)}
@@ -192,15 +198,6 @@ def _job_view(job: Job) -> JobView:
         failure_kind=job.failure_kind,
         last_error=job.last_error,
     )
-
-
-def _conflict(exc: ApprovalError) -> HTTPException:
-    code = (
-        status.HTTP_404_NOT_FOUND
-        if isinstance(exc, ApprovalMissing)
-        else status.HTTP_409_CONFLICT
-    )
-    return HTTPException(status_code=code, detail={"code": exc.code, "message": str(exc)})
 
 
 def _approval_view(approval: Approval) -> ApprovalView:

@@ -4,12 +4,12 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from app.api.limits import RequestLimits
+from app.api.limits import RequestLimits, SlidingWindow
 from app.api.review import router as review_router
 from app.api.routes import router
 from app.config import Settings
 from app.providers.base import ExtractionProvider
-from app.providers.crm import CrmClient, MockCrm
+from app.providers.crm import CrmClient, DatabaseCrm
 from app.providers.fake import FakeProvider
 from app.repositories.session import build_session_factory
 from app.seed import seed_documents
@@ -37,13 +37,17 @@ def create_app(
     app.state.settings = settings
     app.state.session_factory = build_session_factory(settings)
     app.state.provider = provider or build_provider(settings)
-    app.state.crm = crm or MockCrm()
+    app.state.crm = crm or DatabaseCrm(app.state.session_factory)
     app.state.worker = Worker(
         session_factory=app.state.session_factory,
         provider=app.state.provider,
         crm=app.state.crm,
     )
-    app.add_middleware(RequestLimits)
+    app.add_middleware(
+        RequestLimits,
+        max_body_bytes=settings.max_body_bytes,
+        window=SlidingWindow(limit=settings.rate_limit_per_minute),
+    )
     app.include_router(router)
     app.include_router(review_router)
     return app
